@@ -9,8 +9,7 @@ public class User {
     private String ipAddress;
 
 
-    public User(int id, String pseudo, String password, String ipAddress) {
-        this.id = id;
+    public User(String pseudo, String password, String ipAddress) {
         this.pseudo = pseudo;
         this.password = password;
         this.ipAddress = ipAddress;
