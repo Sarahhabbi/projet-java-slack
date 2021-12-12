@@ -22,25 +22,11 @@ public class Database {
         if (Database.instance == null) {
             Database.instance = new Database(url, user, password);
         }
-
         return instance;
     }
 
     public Connection getConnection() {
         return this.connection;
-    }
-
-    public void showMetaData() {
-        try {
-            DatabaseMetaData databaseMetaData = this.connection.getMetaData();
-
-            ResultSet tables = databaseMetaData.getTables(null, null, null, new String[]{"TABLE"});
-            while(tables.next()) {
-                System.out.println("TABLE_NAME : " + tables.getString("TABLE_NAME"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     private void initConnection() {

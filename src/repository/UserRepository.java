@@ -21,7 +21,6 @@ public class UserRepository{
         return instance;
     }
 
-    public void save(User user) {
         String req = "INSERT INTO users (pseudo, password) VALUES (?, ?)";
         try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
 

@@ -9,9 +9,8 @@ public class Main {
 
         UserRepository userRepository = UserRepository.getInstance(database.getConnection());
 
-        User sarah = new User("habbisarah", "motdepasse2312","192.234.344.54");
+        /*User sarah = new User("habbisarah", "motdepasse2312","192.234.344.54");
         userRepository.save(sarah);
-        System.out.println("pseudo: "+ sarah.getPseudo() + " id : "+ sarah.getId());
-
+        System.out.println("pseudo: "+ sarah.getPseudo() + " id : "+ sarah.getId());*/
     }
 }
