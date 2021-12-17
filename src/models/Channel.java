@@ -1,6 +1,6 @@
 package models;
 
-public class Channel {
+public class Channel implements HasId {
     private String name;
     private String admin_id;
 
