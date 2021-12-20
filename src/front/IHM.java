@@ -19,7 +19,6 @@ public class IHM {
         password = input.nextLine();
 
         User user = new User(pseudo, password);
-        input.close();
         return user;
     }
 
@@ -78,6 +77,6 @@ public class IHM {
             userChoice = menu();
             matchChoice(userChoice);
         }
-
+        return;
     }
 }
