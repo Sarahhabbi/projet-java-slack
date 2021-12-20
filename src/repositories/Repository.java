@@ -14,4 +14,5 @@ public interface Repository<T extends HasId> {
 
     T find(String id);
 
+    boolean exists(T obj);
 }

@@ -18,6 +18,10 @@ public class MemoryCache<T extends HasId> implements Repository<T> {
         return obj;
     }
 
+    public Map<String, T> getCache() {
+        return cache;
+    }
+
     @Override
     public void delete(T obj) {
         cache.remove(obj.getName());
@@ -31,5 +35,16 @@ public class MemoryCache<T extends HasId> implements Repository<T> {
     @Override
     public T find(String id) {
         return cache.get(id);
+    }
+
+    @Override
+    public boolean exists(T obj) {
+        return cache.containsKey(obj.getName());
+    }
+
+    public void displayCache(){
+        for (Map.Entry<String, T> entry : cache.entrySet()) {
+            System.out.println(entry.getKey()+" : "+entry.getValue());
+        }
     }
 }

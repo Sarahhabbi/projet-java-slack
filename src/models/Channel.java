@@ -1,8 +1,11 @@
 package models;
 
+import java.util.ArrayList;
+
 public class Channel implements HasId {
     private String name;
     private String admin_id;
+    private ArrayList<User> members;
 
     public Channel(String name, String admin_id) {
         this.name = name;

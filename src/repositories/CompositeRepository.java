@@ -11,7 +11,7 @@ import java.util.TimerTask;
 public class CompositeRepository<T extends HasId> implements Repository<T> {
 
     private final Repository<T> memory = new MemoryCache<>();
-    private Repository<T> file;
+    private final Repository<T> file;
     private Timer timer = new Timer();
 
     public CompositeRepository(Repository<T> file) {
@@ -48,4 +48,11 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
     public T find(String id) {
         return memory.find(id);
     }
+
+    @Override
+    public boolean exists(T obj) {
+        return false;
+    }
+
+
 }

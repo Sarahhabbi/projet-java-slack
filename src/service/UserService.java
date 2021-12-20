@@ -8,17 +8,31 @@ import repositories.UserRepository;
 
 public class UserService {
 
-    private Repository<User> userRepository = RepositoryFactory.user();
+    private final Repository<User> userRepository = RepositoryFactory.user();
 
-    public void connect(String pseudo, String password) {
+
+    public void signUp(String pseudo, String password) throws Exception {
+        User newUser = new User(pseudo, password);
+
+        if(!userRepository.exists(newUser)){
+            userRepository.save(newUser);
+        }
+        else{
+            throw new Exception("Pseudo already exists ! Please try another one.");
+        }
+    }
+
+    public void connect(String pseudo, String password) throws Exception {
         User user = userRepository.find(pseudo);
         if (user == null) {
-            //TODO : Erreur
+            throw new NullPointerException();
         }
-        if (!user.getPassword().equals(password)) {
-            // TODO : Erreur
+        else if(!user.getPassword().equals(password)) {
+            throw new Exception("Illegal connection: password incorrect");
         }
-        // Connexion réussie
+        System.out.println("Connection réussi pour " + pseudo);
     }
+
+//   public void joinChannel()
 
 }

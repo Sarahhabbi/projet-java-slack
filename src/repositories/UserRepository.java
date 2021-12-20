@@ -35,4 +35,9 @@ public class UserRepository implements Repository<User> {
     public User find(String id) {
         return null;
     }
+
+    public boolean exists(User newUser) {
+//    TODO: trouver si un user est deja présent dans le fichier
+        return false;
+    }
 }
