@@ -51,7 +51,7 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
 
     @Override
     public boolean exists(T obj) {
-        return false;
+        return memory.exists(obj);
     }
 
 
