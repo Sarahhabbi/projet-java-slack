@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class MemoryCache<T extends HasId> implements Repository<T> {
 
-    private final Map<String, T> cache = new HashMap<>();
+    public final Map<String, T> cache = new HashMap<>();
 
     @Override
     public T save(T obj) {
@@ -40,11 +40,5 @@ public class MemoryCache<T extends HasId> implements Repository<T> {
     @Override
     public boolean exists(T obj) {
         return cache.containsKey(obj.getName());
-    }
-
-    public void displayCache(){
-        for (Map.Entry<String, T> entry : cache.entrySet()) {
-            System.out.println(entry.getKey()+" : "+entry.getValue());
-        }
     }
 }
