@@ -8,13 +8,9 @@ import repositories.UserRepository;
 
 public class UserService {
 
-    private static final Repository<User> userRepository = RepositoryFactory.user();
+    private final Repository<User> userRepository = RepositoryFactory.user();
 
     public UserService() {
-    }
-
-    public Repository<User> getUserRepository() {
-        return userRepository;
     }
 
     public void signUp(String pseudo, String password) throws Exception {
@@ -32,7 +28,7 @@ public class UserService {
     public void connect(String pseudo, String password) throws Exception {
         User user = userRepository.find(pseudo);
         if (user == null) {
-            System.out.println("User est null");
+            System.out.println("User is null");
             throw new NullPointerException();
         }
         else if(!user.getPassword().equals(password)) {

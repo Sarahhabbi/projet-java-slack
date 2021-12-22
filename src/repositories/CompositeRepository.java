@@ -2,11 +2,10 @@ package repositories;
 
 import caches.MemoryCache;
 import models.HasId;
-import repositories.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class CompositeRepository<T extends HasId> implements Repository<T> {
 
@@ -53,6 +52,5 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
     public boolean exists(T obj) {
         return memory.exists(obj);
     }
-
 
 }

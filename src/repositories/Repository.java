@@ -1,5 +1,6 @@
 package repositories;
 
+import caches.MemoryCache;
 import models.HasId;
 
 import java.util.List;
