@@ -3,6 +3,7 @@ package repositories;
 import caches.MemoryCache;
 import models.HasId;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -33,23 +34,23 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
     }
 
     @Override
-    public void delete(T obj) {
+    public void delete(T obj) throws Exception {
         memory.delete(obj);
         file.delete(obj);
     }
 
     @Override
-    public List<T> findAll() {
+    public List<T> findAll() throws FileNotFoundException {
         return memory.findAll();
     }
 
     @Override
-    public T find(String id) {
+    public T find(String id) throws FileNotFoundException {
         return memory.find(id);
     }
 
     @Override
-    public boolean exists(T obj) {
+    public boolean exists(T obj) throws FileNotFoundException {
         return memory.exists(obj);
     }
 

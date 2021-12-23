@@ -7,6 +7,7 @@ import java.util.List;
 public class ChannelUserRepository implements Repository<Channel>{
 
     public ChannelUserRepository() {
+
     }
 
     @Override

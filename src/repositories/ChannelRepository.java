@@ -36,5 +36,4 @@ public class ChannelRepository implements Repository<Channel>{
     public boolean exists(Channel obj) {
         return false;
     }
-
 }

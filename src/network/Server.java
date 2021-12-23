@@ -1,43 +1,40 @@
 package network;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import java.text.*;
+import java.util.*;
+import java.net.*;
 
 public class Server {
 
-    public ServerSocket serverSocket;
-    public PrintWriter out;
-    public BufferedReader in;
-    public Socket socket;
-    public static String file = "/Users/habbi/Documents/L3-DANT/PROJETS_GROUPE/ProjetSlack/projet-java-slack/src/data/messages";
+    public static void main(String[] args) throws IOException
+    {
+        ServerSocket ss = new ServerSocket(1234);
+        while(true) {
+            Socket s = null;
+            try
+            {
+                s = ss.accept(); //accepte les clients qui veulent se connecter
+                System.out.println("Creating a server on port 5056");
 
-    public Server(int port) throws IOException {
-        System.out.println("Creating a server on port " + port);
-        this.serverSocket = new ServerSocket(port);
-    }
+                System.out.println("A new client is connected : " + s);
 
-    public void initConnection() throws IOException {
-        System.out.println("Waiting a connection ...");
-        this.socket = serverSocket.accept();
+                // connecter les input/output Stream
+                DataInputStream dis = new DataInputStream(s.getInputStream());
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
-        System.out.println("A client is connected from "+ socket.getInetAddress().getHostAddress());
+                System.out.println("A new thread was assigned  this client");
 
-        this.out = new PrintWriter(socket.getOutputStream(), true);
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
+                // create a new thread object
+                Thread t = new ClientHandler(s);
+                // Invoking the start() method
+                t.start();
 
-    public void close(){
-        try {
-            this.socket.close();
-            this.serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            }
+            catch (Exception e){
+                s.close();
+                e.printStackTrace();
+            }
         }
     }
 }
