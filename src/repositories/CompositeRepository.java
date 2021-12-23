@@ -16,6 +16,7 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
 
     public CompositeRepository(Repository<T> file) {
         this.file = file;
+
         /*timer.schedule(new TimerTask() {
             @Override
             public void run() {
