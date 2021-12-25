@@ -1,9 +1,9 @@
 package network;
 
-import handlers.ClientHandler;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Server {
 
@@ -15,49 +15,42 @@ public class Server {
         this.serverSocket = serverSocket;
     }
 
-    public void startServer() throws IOException {
+    public void closeServerSocket() {
         try{
-            while(true){
-                System.out.println("Waiting a connection ...");
-                Socket socket = serverSocket.accept();
-
-                System.out.println("A client is connected from "+ socket.getInetAddress().getHostAddress());
-
-                // create a new thread object
-                Thread t = new ClientHandler(socket);
-                System.out.println("A new thread was assigned  this client");
-
-                ((ClientHandler) t).writeMenuToClient();
-                // Invoking the start() method
-                // t.start();
+            if(serverSocket != null){
+                serverSocket.close();
             }
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void close(){
-        try {
-            this.serverSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void startServer() {
+        try{
+            while(!serverSocket.isClosed()) {
+                System.out.println("Waiting a connection ...");
+                Socket socket = serverSocket.accept();  //blocking operation
 
-    public static void main(String[] args) throws IOException
-    {
-        ServerSocket ss = new ServerSocket(1234);
-        Server server = new Server(ss);
-        while(true) {
-            try
-            {
-               server.startServer();
+                System.out.println("A new client is connected from "+ socket.getInetAddress().getHostAddress());
+
+                ClientHandler clientHandler = new ClientHandler(socket);
+
+                // create a new thread object
+                Thread thread = new Thread(clientHandler);
+                System.out.println("A new thread was assigned to this client");
+
+                thread.start();
             }
-            catch (Exception e){
-                server.close();
-                e.printStackTrace();
-            }
+        }catch(IOException e){
+            this.closeServerSocket();
+            e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(1234);
+        Server server = new Server(serverSocket);
+
+        server.startServer();
     }
 }
