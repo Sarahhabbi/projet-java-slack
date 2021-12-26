@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 
 public class UserRepository implements Repository<User> {
 
-    private static String FILENAME = "C:\\Users\\33768\\OneDrive\\Bureau\\projet-java-slack\\src\\data\\users";/* a changer selon l'os*/
+    private static String FILENAME = "/Users/habbi/Documents/L3-DANT/PROJETS_GROUPE/ProjetSlack/projet-java-slack/src/data/users";/* a changer selon l'os*/
 
     @Override
     public User save(User obj) {
@@ -64,15 +64,6 @@ public class UserRepository implements Repository<User> {
             ie.printStackTrace();
         }
 
-        /*ArrayList<User> users = new ArrayList<>();
-        Scanner scanner = new Scanner(new File(FILENAME));
-        ArrayList<User> users = new ArrayList<>();
-        String line ;
-        while( (line = scanner.nextLine())!=null) {
-            String[] words = line.split(";");
-            User user = new User(words[0],words[1]);
-            users.add(user);
-        }*/
         return users;
     }
 
