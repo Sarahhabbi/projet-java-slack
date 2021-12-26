@@ -4,7 +4,7 @@ import java.net.Socket;
 
 public class User implements HasId {
 
-    private String pseudo;
+    private final String pseudo;
     private String password;
 
     public User(String pseudo, String password) {
@@ -14,9 +14,6 @@ public class User implements HasId {
 
     // Getters and Setter
     public String getPseudo() { return pseudo; }
-    public void setPseudo(String pseudo) {
-        this.pseudo = pseudo;
-    }
 
     public String getName(){
         return pseudo;

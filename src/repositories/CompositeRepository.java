@@ -4,18 +4,28 @@ import caches.MemoryCache;
 import models.HasId;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
 public class CompositeRepository<T extends HasId> implements Repository<T> {
 
-    private final Repository<T> memory = new MemoryCache<>();
+    private final MemoryCache memory = new MemoryCache<>();
     private final Repository<T> file;
     private Timer timer = new Timer();
 
     public CompositeRepository(Repository<T> file) {
         this.file = file;
+        /*try{
+            List<T> oldcontent=file.findAll();
+            for(T element:oldcontent){
+                memory.save(element);
+            }
+        }
+        catch(FileNotFoundException e){
+            System.out.println("The database is empty");
+        }*/
         /*timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -46,7 +56,7 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
 
     @Override
     public T find(String id) throws FileNotFoundException {
-        return memory.find(id);
+        return (T)memory.find(id);
     }
 
     @Override

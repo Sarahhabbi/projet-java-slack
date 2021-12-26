@@ -48,7 +48,7 @@ public class IHM {
 
         System.out.println("Choose from these choices");
         System.out.println("-------------------------\n");
-        System.out.println("1 - Sign In");
+        System.out.println("1 - Sign Up");
         System.out.println("2 - Log In");
         System.out.println("3 - Quit");
 

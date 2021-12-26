@@ -5,12 +5,9 @@ import models.HasId;
 
 import java.util.List;
 
-public class ChannelRepository implements Repository<Channel>{
-    private String filename;
+public class  ChannelRepository implements Repository<Channel>{
+    private static String FILENAME = "/src/data/channel";
 
-    public ChannelRepository(String filename) {
-        this.filename = filename;
-    }
 
     @Override
     public Channel save(Channel obj) {
