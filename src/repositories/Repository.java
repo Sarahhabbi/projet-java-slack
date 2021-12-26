@@ -18,5 +18,5 @@ public interface Repository<T extends HasId> {
 
     boolean exists(T obj) throws FileNotFoundException;
 
-    T findmember(String name, String pseudo);
+
 }

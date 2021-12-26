@@ -6,20 +6,26 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 
 public class UserRepository implements Repository<User> {
 
-    private static String FILENAME = "C:\\Users\\33768\\OneDrive\\Bureau\\projet-java-slack\\src\\data\\users111";/* a changer selon l'os*/
+    private static String FILENAME = "C:\\Users\\33768\\OneDrive\\Bureau\\projet-java-slack\\src\\data\\users";/* a changer selon l'os*/
 
     @Override
     public User save(User obj) {
         String pseudo = obj.getPseudo();
         String password = obj.getPassword();
 
-        try (PrintWriter writer = new PrintWriter(FILENAME, StandardCharsets.UTF_8)){
-            writer.println(pseudo+ " "+ password);
-        } catch (IOException e) {
+        try{
+            String content=pseudo+ ";"+ password+"\n";
+            FileOutputStream fos= new FileOutputStream(FILENAME,true);
+            fos.write(content.getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        }catch(FileNotFoundException fne){
+            fne.printStackTrace();
+        }catch (IOException e) {
             e.printStackTrace();
         }
         return obj;
@@ -36,7 +42,7 @@ public class UserRepository implements Repository<User> {
         PrintWriter writer = new PrintWriter("/src/data/newfile.txt", StandardCharsets.UTF_8);
 
         while((line = scanner.nextLine()) != null) {
-            String[] words = line.split(" ");
+            String[] words = line.split(";");
             String pseudo2 = words[0];
             String password2 = words[1];
 
@@ -49,14 +55,24 @@ public class UserRepository implements Repository<User> {
 
     @Override
     public ArrayList<User> findAll() throws FileNotFoundException {
+        ArrayList<User> users = new ArrayList<>();
+        try{
+            FileInputStream fis=new FileInputStream(FILENAME);
+            byte[]b= fis.readAllBytes();
+            fis.close();
+        } catch(IOException ie) {
+            ie.printStackTrace();
+        }
+
+        /*ArrayList<User> users = new ArrayList<>();
         Scanner scanner = new Scanner(new File(FILENAME));
         ArrayList<User> users = new ArrayList<>();
         String line ;
         while( (line = scanner.nextLine())!=null) {
-            String[] words = line.split(" ");
+            String[] words = line.split(";");
             User user = new User(words[0],words[1]);
             users.add(user);
-        }
+        }*/
         return users;
     }
 
@@ -65,7 +81,7 @@ public class UserRepository implements Repository<User> {
         Scanner scanner = new Scanner(new File(FILENAME));
         String line ;
         while((line = scanner.nextLine())!=null) {
-            String[] words = line.split(" ");
+            String[] words = line.split(";");
             if(pseudo.equals(words[0])){
                 return new User(words[0], words[1]);
             }
@@ -77,7 +93,7 @@ public class UserRepository implements Repository<User> {
         Scanner scanner = new Scanner(new File(FILENAME));
         String line ;
         while((line = scanner.nextLine())!=null) {
-            String[] words = line.split(" ");
+            String[] words = line.split(";");
             if(words[0].equals(newUser.getPseudo()) && words[1].equals(newUser.getPassword())){
                 return true;
             }

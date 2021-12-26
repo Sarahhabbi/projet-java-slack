@@ -6,6 +6,7 @@ public class Channel implements HasId {
     private final String name;
     private final String admin_id;
     private ArrayList<User> members;
+    private ArrayList<Message> message;
 
     public Channel(String name, String admin_id) {
         this.name = name;
@@ -16,5 +17,5 @@ public class Channel implements HasId {
     public String getName() {return name;}
 
     public String getAdmin_id() {return admin_id;}
-    public void setAdmin_id(String admin_id) {this.admin_id = admin_id;}
+
 }

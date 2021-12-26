@@ -1,7 +1,7 @@
 package network;
 
 
-import models.User;
+import models.*;
 import service.UserService;
 
 import java.io.DataInputStream;
@@ -19,6 +19,8 @@ public class ClientHandler extends Thread {
 
     private UserService userService;
 
+    private User currentUser;
+    private Channel currentChannel;
 
     // Constructor
     public ClientHandler(Socket s) throws IOException {
@@ -27,6 +29,9 @@ public class ClientHandler extends Thread {
         this.dos = new DataOutputStream(this.s.getOutputStream());
 
         this.userService = new UserService();
+
+        this.currentUser=null;
+        this.currentChannel=null;
     }
 
     //Sign In
@@ -58,7 +63,24 @@ public class ClientHandler extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.currentUser=user;
     }
+
+    //Create Channel
+    public void createChannel(String name)throws Exception{
+        if(this.currentUser==null){
+            throw new Exception("Please sign in before create a channel");
+        }
+        userService.createChannel(name,this.currentUser.getPseudo());
+    }
+
+    //Join Channel
+    /*public void JoinChannel(String name) throws Exception{
+        if(this.currentUser==null){
+            throw new Exception("Please sign in before create a channel");
+        }
+        userService.joinChannel
+    }*/
 
     @Override
     public void run()
