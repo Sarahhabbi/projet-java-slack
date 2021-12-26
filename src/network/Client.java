@@ -27,15 +27,18 @@ public class Client {
 
     public void sendMessage(){
         try{
-            writer.println(username);
+            writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
 
+            String messageToSend = null;
             Scanner scanner = new Scanner(System.in);
 
 //          send messages
-            while(socket.isConnected()){
-                String messageToSend = scanner.nextLine();
+            do{
+                messageToSend = scanner.nextLine();
                 writer.println(username+ ": " + messageToSend);  // handled in ClientHandler
-            }
+            }while(messageToSend!=null);
+
+            closeEverything(socket, bufferedReader, writer);
 
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
@@ -57,9 +60,11 @@ public class Client {
                         System.out.println(messageFromChat);
                     } catch (IOException e) {
                         closeEverything(socket, bufferedReader, writer);
+                        e.printStackTrace();
                         break;
                     }
                 }
+
             }
         }).start();
     }
