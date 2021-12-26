@@ -25,20 +25,26 @@ public class Client {
     }
 
 
-    public void sendMessage(){
+    public void sendMessage(String command){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
-
-            String messageToSend = null;
-            Scanner scanner = new Scanner(System.in);
+            writer.println(command);
 
 //          send messages
+            String messageToSend;
+            Scanner scanner = new Scanner(System.in);
             do{
                 messageToSend = scanner.nextLine();
-                writer.println(username+ ": " + messageToSend);  // handled in ClientHandler
-            }while(messageToSend!=null);
 
-            closeEverything(socket, bufferedReader, writer);
+                String[] words = messageToSend.split(" "); /* if it's a command */
+                if(words[0].equals("/")){
+                    writer.println(messageToSend);
+                }
+                else /* if it's a lambda message */
+                {
+                    writer.println(username+ " : "+ messageToSend);  // handled in ClientHandler
+                }
+            }while(socket.isConnected());   // ICI
 
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
@@ -86,6 +92,7 @@ public class Client {
         }
     }
 
+
     public static void main(String[] args) throws IOException {
         try
         {
@@ -96,12 +103,21 @@ public class Client {
 
             // establish the connection with server port 1234
             Socket socket = new Socket("localhost", 1234);
-
             // create Client
             Client client = new Client(socket, username);
 
+            System.out.println("Choose your command");
+            System.out.println("1 - / signUp password");
+            System.out.println("2 - / logIn password");
+            System.out.println("3 - / create #myNewChannel ");
+            System.out.println("4 - / join #myNewChannel ");
+            System.out.println("5 - / delete #myNewChannel");
+            System.out.println("6 - / exit slack");
+
+            String command = scanner.nextLine();
+
             client.listenForMessage();
-            client.sendMessage();
+            client.sendMessage(command);
 
         }catch(Exception e){
             e.printStackTrace();

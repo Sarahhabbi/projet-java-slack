@@ -48,9 +48,13 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(1234);
-        Server server = new Server(serverSocket);
+        Server server;
 
-        server.startServer();
+        try (ServerSocket serverSocket = new ServerSocket(1234)) {
+            server = new Server(serverSocket);
+            server.startServer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

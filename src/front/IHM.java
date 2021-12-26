@@ -1,11 +1,15 @@
 package front;
 
 import models.User;
+import network.Server;
 import service.UserService;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Scanner;
 
 public class IHM {
+    private static Server server;
     private static UserService userService = new UserService();
 
     private static User menuLoginAndSignup() {
@@ -42,8 +46,8 @@ public class IHM {
     }
 
 
-    public static int menu() {
-        int selection;
+    public static String menu() {
+        String selection;
         Scanner input = new Scanner(System.in);
 
         System.out.println("Choose from these choices");
@@ -52,31 +56,57 @@ public class IHM {
         System.out.println("2 - Log In");
         System.out.println("3 - Quit");
 
-        selection = input.nextInt();
+        selection = input.nextLine();
         return selection;
     }
 
-    public static void matchChoice(int selection){
+    public static void matchChoice(String selection){
         switch(selection){
-            case 1:
+            case "1":
                 signIn();
                 break;
-            case 2:
+            case "2":
                 logIn();
+                break;
+            case "3":
+                break;
             default:
                 System.out.println("Enter a correct choice");
+                matchChoice(IHM.menu());
         }
     }
 
     public static void main(String[] args){
-        int userChoice;
+/*
 
-        userChoice = menu();
+        try (ServerSocket serverSocket = new ServerSocket(1234)) {
+            server = new Server(serverSocket);
+            server.startServer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+*/
 
-        while(userChoice != 3){
+        String selection;
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("Choose your command");
+        System.out.println("1 - / signUp password");
+        System.out.println("2 - / logIn password");
+        System.out.println("3 - / create #myNewChannel ");
+        System.out.println("4 - / join #myNewChannel ");
+        System.out.println("5 - / delete #myNewChannel");
+        System.out.println("6 - / exit slack");
+
+        selection = input.nextLine();
+        String[] words = selection.split(" ");
+
+
+        /*int userChoice;
+        do{
             userChoice = menu();
             matchChoice(userChoice);
-        }
-        return;
+        }while(userChoice != 3);*/
+
     }
 }
