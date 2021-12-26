@@ -30,18 +30,19 @@ public class ClientHandler implements Runnable {
 //    everything in this method will be run in a separate thread, we will listen to new messages (blocking operation)
     @Override
     public void run() {
-        String messageFromClient;
+        String messageFromClient = null;
 
-        while(socket.isConnected()){
+        do{
             try{
                 messageFromClient = bufferedReader.readLine(); // blocking operation but here it's in another thread so no problem
                 broadcastMessage(messageFromClient);
-
             } catch (IOException e) {
-                closeEverything(socket, bufferedReader, writer);
+                e.printStackTrace();
                 break;
             }
-        }
+        }while(messageFromClient!=null);
+
+        closeEverything(socket, bufferedReader, writer);
     }
 
     public void broadcastMessage(String messageToSend) {
@@ -67,7 +68,6 @@ public class ClientHandler implements Runnable {
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, PrintWriter writer) {
-        removeClientHandler();
         try{
             if(bufferedReader != null){
                 bufferedReader.close();
@@ -78,6 +78,8 @@ public class ClientHandler implements Runnable {
             if(socket != null){
                 socket.close();
             }
+            removeClientHandler();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
