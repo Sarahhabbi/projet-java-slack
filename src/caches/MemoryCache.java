@@ -48,6 +48,7 @@ public class MemoryCache<T extends HasId> implements Repository<T> {
         return cache.get(id);
     }
 
+
     @Override
     public boolean exists(T obj) {
         return cache.containsKey(obj.getName());
