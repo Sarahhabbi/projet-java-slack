@@ -11,11 +11,12 @@ import java.util.Timer;
 
 public class CompositeRepository<T extends HasId> implements Repository<T> {
 
-    private final MemoryCache memory = new MemoryCache<>();
+    private final MemoryCache memory;
     private final Repository<T> file;
     private Timer timer = new Timer();
 
     public CompositeRepository(Repository<T> file) {
+        this.memory= new MemoryCache<>();
         this.file = file;
         /*try{
             List<T> oldcontent=file.findAll();
@@ -60,7 +61,7 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
     }
 
     @Override
-    public boolean exists(T obj) throws FileNotFoundException {
+    public boolean exists(T obj) {
         return memory.exists(obj);
     }
 

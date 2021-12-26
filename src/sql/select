@@ -1,0 +1,10 @@
+SELECT * FROM users;
+SELECT * FROM channels;
+SELECT * FROM channel_users;
+SELECT * FROM messages;
+
+
+-- Select all last messages from a channel (ordered by DESC on DATE)
+SELECT * FROM messages
+WHERE channel_id=2
+ORDER BY date DESC;

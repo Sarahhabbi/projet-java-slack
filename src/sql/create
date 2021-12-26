@@ -1,0 +1,38 @@
+CREATE TABLE IF NOT EXISTS users (
+  pseudo varchar(60) NOT NULL UNIQUE PRIMARY KEY,
+  password varchar(60) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS channels (
+  admin_pseudo varchar(60) NOT NULL,
+  name varchar(60) NOT NULL UNIQUE  PRIMARY KEY,
+  CONSTRAINT admin_id_fk1 FOREIGN KEY (admin_pseudo) REFERENCES users (pseudo)
+);
+
+CREATE TABLE IF NOT EXISTS channel_users (
+  channel_id varchar(60) NOT NULL,
+  user_id varchar(60) NOT NULL,
+  PRIMARY KEY (channel_id, user_id),
+  CONSTRAINT channel_users_fk1 FOREIGN KEY (channel_id) REFERENCES channels (name),
+  CONSTRAINT channel_users_fk2 FOREIGN KEY (user_id) REFERENCES users (pseudo)
+);
+
+CREATE TABLE IF NOT EXISTS groupeMessages (
+  message_id bigint unsigned auto_increment PRIMARY KEY,
+  user_id varchar(60) NOT NULL,
+  channel_id varchar(60) NOT NULL,
+  message TEXT,
+  date DATE NOT NULL,
+  CONSTRAINT messages_fk1 FOREIGN KEY (user_id) REFERENCES users (pseudo),
+  CONSTRAINT messages_fk2 FOREIGN KEY (channel_id) REFERENCES channels (name)
+);
+
+CREATE TABLE IF NOT EXISTS directMessages (
+  message_id bigint unsigned auto_increment PRIMARY KEY,
+  user_from varchar(60) NOT NULL,
+  user_to varchar(60) NOT NULL,
+  message TEXT,
+  date DATE NOT NULL,
+  CONSTRAINT dmessages_fk1 FOREIGN KEY (user_from) REFERENCES users (pseudo),
+  CONSTRAINT dmessages_fk2 FOREIGN KEY (user_to) REFERENCES users (pseudo)
+);
