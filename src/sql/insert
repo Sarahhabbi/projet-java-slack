@@ -1,0 +1,25 @@
+ -- users
+INSERT INTO users (pseudo, password) VALUES ("Siyani","password");
+INSERT INTO users (pseudo, password) VALUES ("Doha","helloworld");
+INSERT INTO users (pseudo, password) VALUES ("Shalom","flemme");
+INSERT INTO users (pseudo, password) VALUES ("Sarah","coucou");
+
+INSERT INTO channels (name, admin_pseudo) VALUES ("channelSarah", "Sarah");
+INSERT INTO channels (name, admin_pseudo) VALUES ("channelDoha", "Doha");
+
+-- channels_users 1
+INSERT INTO channel_users (channel_id, user_id) VALUES ("ChannelSarah","Sarah");
+INSERT INTO channel_users (channel_id, user_id) VALUES ("ChannelSarah","Shalom");
+INSERT INTO channel_users (channel_id, user_id) VALUES ("ChannelSarah","Doha");
+-- channels_users 2
+INSERT INTO channel_users (channel_id, user_id) VALUES ("ChannelDoha","Shalom");
+INSERT INTO channel_users (channel_id, user_id) VALUES ("ChannelDoha","Doha");
+
+-- messages in channel 1
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Sarah","ChannelSarah","channel 1 sarah : hello world flemme de faire un gros messages", CURRENT_TIMESTAMP);
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Shalom","ChannelSarah","channel 1 sarah : la date devrait PAS fail", CURRENT_TIMESTAMP);
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Doha","ChannelSarah","channel 1 sarah : on test un truc lo avec la date", CURRENT_TIMESTAMP);
+-- messages in channel 2
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Sarah","ChannelDoha","channel 2 sarah : hello world  ", CURRENT_TIMESTAMP);
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Shalom","ChannelDoha","channel 2 siyani : je suis pas dans ce channel mais je peux quand meme ecrire", CURRENT_TIMESTAMP);
+INSERT INTO groupeMessages (user_id, channel_id, message, date) VALUES ("Doha","ChannelDoha","channel 2 doha : coucou je suis dans ce channel", CURRENT_TIMESTAMP);

@@ -6,7 +6,7 @@ import models.HasId;
 import java.io.FileNotFoundException;
 import java.util.List;
 
-public interface Repository<T extends HasId> {
+public interface Repository_channel<T extends HasId>{
 
     T save(T obj);
 
@@ -17,6 +17,6 @@ public interface Repository<T extends HasId> {
     T find(String id) throws FileNotFoundException;
 
     boolean exists(T obj) ;
-
+    List<T> findAllByChannel(String name) throws FileNotFoundException;
 
 }

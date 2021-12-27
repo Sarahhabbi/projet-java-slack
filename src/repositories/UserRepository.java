@@ -2,93 +2,135 @@ package repositories;
 
 import models.User;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.sql.*;
+import java.util.List;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
+
 
 public class UserRepository implements Repository<User> {
+    private static UserRepository instance;
+    private final Connection DBConnexion;
 
-    private static String FILENAME = "/Users/habbi/Documents/L3-DANT/PROJETS_GROUPE/ProjetSlack/projet-java-slack/src/data/users";/* a changer selon l'os*/
+    private UserRepository(Connection DBConnexion){
+        this.DBConnexion = DBConnexion;
+    }
+
+    public static UserRepository getInstance(Connection DBConnexion){
+        if (UserRepository.instance == null) {
+            UserRepository.instance = new UserRepository(DBConnexion);
+        }
+        return instance;
+    }
 
     @Override
-    public User save(User obj) {
-        String pseudo = obj.getPseudo();
-        String password = obj.getPassword();
+    public User save(User user) {
+        String req = "INSERT INTO users (pseudo, password) VALUES (?, ?)";
+        try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
 
-        try{
-            String content=pseudo+ ";"+ password+"\n";
-            FileOutputStream fos= new FileOutputStream(FILENAME,true);
-            fos.write(content.getBytes(StandardCharsets.UTF_8));
-            fos.close();
-        }catch(FileNotFoundException fne){
-            fne.printStackTrace();
-        }catch (IOException e) {
+            ps.setString(1, user.getPseudo());
+            ps.setString(2, user.getPassword());
+
+            ps.executeUpdate();
+
+            System.out.println(user.getPseudo() + " successfully added to USERS table !");
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return obj;
+        return user;
     }
 
     @Override
-    public void delete(User obj) throws Exception {
-        if(!exists(obj)){
-            throw new Exception(obj.getPseudo() +" doesn't exists !");
-        }
-        String pseudo1 = obj.getPseudo();
-        Scanner scanner = new Scanner(new File(FILENAME));
-        String line ;
-        PrintWriter writer = new PrintWriter("/src/data/newfile.txt", StandardCharsets.UTF_8);
-
-        while((line = scanner.nextLine()) != null) {
-            String[] words = line.split(";");
-            String pseudo2 = words[0];
-            String password2 = words[1];
-
-            if( !(pseudo2.equals(pseudo1)) ) {
-                writer.println(pseudo2 + " " + password2);
-            }
-        }
-        FILENAME = "/src/data/newfile.txt";
-    }
-
-    @Override
-    public ArrayList<User> findAll() throws FileNotFoundException {
+    public List<User> findAll() {
+        String req="SELECT * FROM users";
         ArrayList<User> users = new ArrayList<>();
         try{
-            FileInputStream fis=new FileInputStream(FILENAME);
-            byte[]b= fis.readAllBytes();
-            fis.close();
-        } catch(IOException ie) {
-            ie.printStackTrace();
+            PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
+            ResultSet generatedKeys=ps.executeQuery(req);
+            while(generatedKeys.next()){
+                users.add(new User(generatedKeys.getString(1),generatedKeys.getString(2)));
+                System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2));
+            }
+            generatedKeys.close();
+        }catch (SQLException e) {
+            e.printStackTrace();
         }
-
         return users;
     }
 
     @Override
-    public User find(String pseudo) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File(FILENAME));
-        String line ;
-        while((line = scanner.nextLine())!=null) {
-            String[] words = line.split(";");
-            if(pseudo.equals(words[0])){
-                return new User(words[0], words[1]);
+    public boolean exists(User obj){
+        System.out.println("recherche: "+obj.getPseudo()+" "+obj.getPassword());
+        try{
+            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT * FROM users WHERE pseudo=? AND password=?");
+            ps.setString(1, obj.getPseudo());
+            ps.setString(2, obj.getPassword());
+
+            ResultSet res=ps.executeQuery();
+            while(res.next()){
+                System.out.println(res.getString(1)+ " "+res.getString(2));
+                return true;
             }
+            res.close();
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    @Override
+    public void delete(User obj){
+
+        try {
+            PreparedStatement ps = this.DBConnexion.prepareStatement("DELETE FROM users WHERE pseudo=? AND password=?");
+            ps.setString(1, obj.getPseudo());
+            ps.setString(2, obj.getPassword());
+
+            ps.executeUpdate();
+
+
+            System.out.println(" successfully deleted to USERS table !");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public User find(String name){
+        try {
+            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT * FROM users WHERE pseudo=? ");
+            ps.setString(1, name);
+
+            ResultSet res=ps.executeQuery();
+            while(res.next()){
+                User u=new User(res.getString(1),res.getString(2));
+                System.out.println(u.getPseudo()+" "+u.getPassword());
+                res.close();
+                return u;
+            }
+            res.close();
+            System.out.println("There is no user with this name");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public boolean exists(User newUser) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File(FILENAME));
-        String line ;
-        while((line = scanner.nextLine())!=null) {
-            String[] words = line.split(";");
-            if(words[0].equals(newUser.getPseudo()) && words[1].equals(newUser.getPassword())){
-                return true;
-            }
+    public List<User> saveAll(List<User> users) {
+        for(User element:users){
+            save(element);
         }
-        return false;
+        return null;
+    }
+
+
+    public void deleteAll() {
+        try {
+            PreparedStatement ps = this.DBConnexion.prepareStatement("DELETE FROM users");
+            ps.executeUpdate();
+            System.out.println(" successfully deleted to USERS table !");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
