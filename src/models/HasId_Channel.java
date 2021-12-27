@@ -1,5 +1,6 @@
 package models;
 
-public interface HasId_Channel extends HasId {
+public interface HasId_Channel {
+
     String getChannelName();
 }

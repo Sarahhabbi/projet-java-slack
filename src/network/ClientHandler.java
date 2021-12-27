@@ -1,8 +1,8 @@
 package network;
 
-import front.IHM;
-import models.User;
 import service.UserService;
+import front.*;
+import models.*;
 
 import java.io.*;
 import java.net.Socket;
