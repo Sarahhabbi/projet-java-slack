@@ -13,6 +13,10 @@ public class Channel implements HasId {
         this.admin_id = admin_id;
     }
 
+    public void addMember(User user) {
+        members.add(user);
+    }
+
     //Getters and setters
     public String getName() {return name;}
 

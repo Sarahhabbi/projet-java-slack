@@ -1,12 +1,16 @@
 package network;
 
+import front.IHM;
+import models.ChannelUser;
+import models.User;
+import models.Message;
+import service.ChannelService;
 import service.UserService;
-import front.*;
-import models.*;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
 
@@ -20,7 +24,7 @@ public class ClientHandler implements Runnable {
     private String joinedChannel;
 
     private static UserService userService = new UserService();
-
+    private static ChannelService channelService= new ChannelService();
 
     public ClientHandler(Socket socket) {
         try{
@@ -50,15 +54,13 @@ public class ClientHandler implements Runnable {
     public void run() {
         /* handle client command & send messages*/
         try {
-            String[] command;
+            /*String[] command;
             command = bufferedReader.readLine().split(" ");
             if(command.length >= 2 && command[0].equals("/")){
                 handleClientChoice(command[1], command[2]);
                 System.out.println(" première commande");
-            }
-
+            }*/
             sendMessage();
-
         } catch (Exception e) {
             closeEverything(socket, bufferedReader, writer);
             e.printStackTrace();
@@ -84,7 +86,7 @@ public class ClientHandler implements Runnable {
             case "create":
                 System.out.println(clientUsername + " want to create");
 
-//              TODO: channelService.createChannel(arg, username);
+                channelService.createChannel(arg, clientUsername);
                 System.out.println("juste pour que Intellij arrete de souler");
                 setJoinedChannel(arg);
                 broadcastMessage(clientUsername+ " has entered "+ joinedChannel, joinedChannel);
@@ -92,11 +94,15 @@ public class ClientHandler implements Runnable {
 
             case "join":
                 setJoinedChannel(arg);
+                List<Message> messages=channelService.joinChannel(arg,clientUsername);
+                for (Message m:messages){
+                    writer.println(m.getText());
+                }
                 broadcastMessage( clientUsername+ " has entered "+ joinedChannel, joinedChannel);
                 break;
 
             case "delete":
-//              TODO channelService.deleteChannel(arg);
+                channelService.deleteChannel(arg,clientUsername);
                 break;
 
             case "exit":
@@ -144,6 +150,8 @@ public class ClientHandler implements Runnable {
                     System.out.println("handling client choice");
                 }else if(joinedChannel!=null){
                     broadcastMessage(messageFromClient, joinedChannel);
+                    //create message m
+                    // channelService.sendMessage(Message m);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -151,7 +159,7 @@ public class ClientHandler implements Runnable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } while(socket.isConnected());  // ICI
+        } while(messageFromClient!=null);  // ICI
     }
 
     public void broadcastMessage(String messageToSend, String channel) {

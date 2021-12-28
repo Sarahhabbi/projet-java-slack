@@ -8,21 +8,26 @@ import models.Message;
 import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class ChannelUserRepository implements Repository_channel<ChannelUser>{
-    private static ChannelUserRepository instance;
+public class ChannelUserRepository implements Repository<ChannelUser>{
+    private final String channelName;
     private final Connection DBConnexion;
+    private static final Map<String,ChannelUserRepository> instance=new HashMap<>();
 
-    private ChannelUserRepository(Connection DBConnexion){
+    private ChannelUserRepository(Connection DBConnexion,String channelName){
         this.DBConnexion = DBConnexion;
+        this.channelName=channelName;
+        ChannelUserRepository.instance.put(channelName,new ChannelUserRepository(DBConnexion,channelName));
     }
 
-    public static ChannelUserRepository getInstance(Connection DBConnexion){
-        if (ChannelUserRepository.instance == null) {
-            ChannelUserRepository.instance = new ChannelUserRepository(DBConnexion);
+    public static ChannelUserRepository getInstance(String channelName, Connection DBConnexion){
+        if (ChannelUserRepository.instance.get(channelName)== null) {
+            return new ChannelUserRepository(DBConnexion,channelName);
         }
-        return instance;
+        return instance.get(channelName);
     }
 
     @Override
@@ -55,23 +60,7 @@ public class ChannelUserRepository implements Repository_channel<ChannelUser>{
         }
     }
 
-    @Override
-    public List<ChannelUser> findAll() throws FileNotFoundException {
-        String req="SELECT channel_id,user_id FROM channel_users";
-        ArrayList<ChannelUser> cu = new ArrayList<>();
-        try{
-            PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
-            ResultSet generatedKeys=ps.executeQuery(req);
-            while(generatedKeys.next()){
-                cu.add(new ChannelUser(generatedKeys.getString(1),generatedKeys.getString(2)));
-                System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2));
-            }
-            generatedKeys.close();
-        }catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return cu;
-    }
+
 
     @Override
     public ChannelUser find(String id) throws FileNotFoundException {
@@ -100,12 +89,12 @@ public class ChannelUserRepository implements Repository_channel<ChannelUser>{
 
 
     @Override
-    public List<ChannelUser> findAllByChannel(String name) throws FileNotFoundException {
+    public List<ChannelUser> findAll() throws FileNotFoundException {
         String req="SELECT channel_id,user_id FROM channel_users WHERE channel_id=?";
         ArrayList<ChannelUser> cu = new ArrayList<>();
         try{
             PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, name);
+            ps.setString(1, channelName);
             ResultSet generatedKeys=ps.executeQuery(req);
             while(generatedKeys.next()){
                 cu.add(new ChannelUser(generatedKeys.getString(1),generatedKeys.getString(2)));

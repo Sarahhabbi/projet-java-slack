@@ -11,6 +11,8 @@ import java.util.ArrayList;
 
 public class UserService {
 
+    private User currentUser;
+    private Channel currentchannel;
     private static final Repository<User> userRepository = RepositoryFactory.user();
     private static final Repository<Channel> channelRepository = RepositoryFactory.channel();
     private ArrayList<Repository<Channel>> channelUserRepository;

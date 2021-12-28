@@ -1,27 +1,31 @@
 package repositories;
 
 
-import models.Channel;
 import models.Message;
 
 import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MessageRepository implements Repository_channel<Message>{
-    private static MessageRepository instance;
+public class MessageRepository implements Repository<Message>{
+    private final String channelName;
+    private final static Map<String, MessageRepository> instance = new HashMap<>();
     private final Connection DBConnexion;
 
-    private MessageRepository(Connection DBConnexion){
+    private MessageRepository( Connection DBConnexion,String channelName){
+        this.channelName = channelName;
         this.DBConnexion = DBConnexion;
+        MessageRepository.instance.put(channelName,new MessageRepository(DBConnexion,channelName));
     }
 
-    public static MessageRepository getInstance(Connection DBConnexion){
-        if (MessageRepository.instance == null) {
-            MessageRepository.instance = new MessageRepository(DBConnexion);
+    public static MessageRepository getInstance(String channelName, Connection DBConnexion){
+        if (MessageRepository.instance.get(channelName)== null) {
+            return new MessageRepository(DBConnexion,channelName);
         }
-        return instance;
+        return instance.get(channelName);
     }
 
     @Override
@@ -55,23 +59,7 @@ public class MessageRepository implements Repository_channel<Message>{
         }
     }
 
-    @Override
-    public List<Message> findAll() throws FileNotFoundException {
-        String req="SELECT message_id,message,user_id,channel_id FROM groupeMessages";
-        ArrayList<Message> messages = new ArrayList<>();
-        try{
-            PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
-            ResultSet generatedKeys=ps.executeQuery(req);
-            while(generatedKeys.next()){
-                messages.add(new Message(generatedKeys.getString(1),generatedKeys.getString(2),generatedKeys.getString(3),generatedKeys.getString(4)));
-                System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2)+" "+generatedKeys.getString(3)+" "+generatedKeys.getString(4));
-            }
-            generatedKeys.close();
-        }catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return messages;
-    }
+
 
     @Override
     public Message find(String id) throws FileNotFoundException {
@@ -112,14 +100,13 @@ public class MessageRepository implements Repository_channel<Message>{
         return false;
     }
 
-
     @Override
-    public List<Message> findAllByChannel(String name) throws FileNotFoundException {
+    public List<Message> findAll() throws FileNotFoundException {
         String req="SELECT message_id,message,user_id,channel_id FROM groupeMessages WHERE channel_id=?";
         ArrayList<Message> messages = new ArrayList<>();
         try{
             PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, name);
+            ps.setString(1, channelName);
             ResultSet generatedKeys=ps.executeQuery(req);
             while(generatedKeys.next()){
                 messages.add(new Message(generatedKeys.getString(1),generatedKeys.getString(2),generatedKeys.getString(3),generatedKeys.getString(4)));

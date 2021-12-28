@@ -25,10 +25,9 @@ public class Client {
     }
 
 
-    public void sendMessage(String command){
+    public void sendMessage(){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
-            writer.println(command);
 
 //          send messages
             String messageToSend;
@@ -44,7 +43,7 @@ public class Client {
                 {
                     writer.println(username+ " : "+ messageToSend);  // handled in ClientHandler
                 }
-            }while(socket.isConnected());   // ICI
+            }while(messageToSend!=null);   // ICI
 
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
@@ -98,6 +97,7 @@ public class Client {
         {
             // ask username
             Scanner scanner = new Scanner(System.in);
+            System.out.println("------------ Welcome to Slack ! ------------");
             System.out.println("Enter your username:");
             String username = scanner.nextLine();
 
@@ -106,7 +106,6 @@ public class Client {
             // create Client
             Client client = new Client(socket, username);
 
-            System.out.println("Choose your command");
             System.out.println("1 - / signUp password");
             System.out.println("2 - / logIn password");
             System.out.println("3 - / create #myNewChannel ");
@@ -114,10 +113,8 @@ public class Client {
             System.out.println("5 - / delete #myNewChannel");
             System.out.println("6 - / exit slack");
 
-            String command = scanner.nextLine();
-
             client.listenForMessage();
-            client.sendMessage(command);
+            client.sendMessage();
 
         }catch(Exception e){
             e.printStackTrace();

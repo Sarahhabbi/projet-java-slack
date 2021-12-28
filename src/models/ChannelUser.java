@@ -9,11 +9,11 @@ public class ChannelUser implements HasId_Channel{
         this.userName = userName;
     }
 
+    @Override
     public String getName() {
         return channelName+"_"+userName;
     }
 
-    @Override
     public String getChannelName() {
         return channelName;
     }
