@@ -21,7 +21,7 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
             List<T> r = file.findAll();
             for (T element : r) {
                 this.memory.save(element);
-                System.out.println("Element ajoute "+element.getName());
+                System.out.println("Element ajoute "+ element.getName());
             }
         }catch(FileNotFoundException fne){
             fne.printStackTrace();

@@ -101,12 +101,5 @@ public class IHM {
         selection = input.nextLine();
         String[] words = selection.split(" ");
 
-
-        /*int userChoice;
-        do{
-            userChoice = menu();
-            matchChoice(userChoice);
-        }while(userChoice != 3);*/
-
     }
 }

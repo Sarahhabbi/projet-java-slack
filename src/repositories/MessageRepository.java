@@ -18,12 +18,13 @@ public class MessageRepository implements Repository<Message>{
     private MessageRepository( Connection DBConnexion,String channelName){
         this.channelName = channelName;
         this.DBConnexion = DBConnexion;
-        MessageRepository.instance.put(channelName,new MessageRepository(DBConnexion,channelName));
     }
 
     public static MessageRepository getInstance(String channelName, Connection DBConnexion){
         if (MessageRepository.instance.get(channelName)== null) {
-            return new MessageRepository(DBConnexion,channelName);
+            MessageRepository mes=new MessageRepository(DBConnexion,channelName);
+            MessageRepository.instance.put(channelName,mes);
+            return mes;
         }
         return instance.get(channelName);
     }
@@ -39,7 +40,7 @@ public class MessageRepository implements Repository<Message>{
             ps.setString(4, message.getText());
             ps.executeUpdate();
 
-            System.out.println(message.getName() + " successfully added to USERS table !");
+            System.out.println(message.getName() + " successfully added to MESSAGE table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -53,7 +54,7 @@ public class MessageRepository implements Repository<Message>{
             PreparedStatement ps = this.DBConnexion.prepareStatement("DELETE FROM groupeMessages WHERE message_id=?");
             ps.setString(1, obj.getName());
             ps.executeUpdate();
-            System.out.println(" successfully deleted to USERS table !");
+            System.out.println(" successfully deleted to MESSAGE table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -102,12 +103,11 @@ public class MessageRepository implements Repository<Message>{
 
     @Override
     public List<Message> findAll() throws FileNotFoundException {
-        String req="SELECT message_id,message,user_id,channel_id FROM groupeMessages WHERE channel_id=?";
         ArrayList<Message> messages = new ArrayList<>();
         try{
-            PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT message_id,message,user_id,channel_id FROM groupeMessages WHERE channel_id=?");
             ps.setString(1, channelName);
-            ResultSet generatedKeys=ps.executeQuery(req);
+            ResultSet generatedKeys=ps.executeQuery();
             while(generatedKeys.next()){
                 messages.add(new Message(generatedKeys.getString(1),generatedKeys.getString(2),generatedKeys.getString(3),generatedKeys.getString(4)));
                 System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2)+" "+generatedKeys.getString(3)+" "+generatedKeys.getString(4));

@@ -13,10 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ChannelService {
-    private User currentUser;
-    private Channel currentchannel;
 
-    private static final Repository<User> userRepository = RepositoryFactory.user();
+
     private static final Repository<Channel> channelRepository = RepositoryFactory.channel();
     private static Map<String, Repository<Message>> messageRepositories = new HashMap<String, Repository<Message>>();
     private static Map<String, Repository<ChannelUser>> channeluserRepositories = new HashMap<String, Repository<ChannelUser>>();
@@ -37,7 +35,9 @@ public class ChannelService {
     }
 
     public List<Message> joinChannel(String name,String pseudo) throws Exception {
-        Channel channel=channelRepository.find(name);
+        Channel channel = channelRepository.find(name);
+
+
         if(channel == null){
             throw new Exception("This channel didn't exist");
         }
@@ -46,6 +46,7 @@ public class ChannelService {
         if(cu==null){
             cu=RepositoryFactory.channel_user(name);
             channeluserRepositories.put(name,cu);
+            cu.save(channel_user);
         }
 
         //récuperer l'historique des messages d'un channel
@@ -54,7 +55,6 @@ public class ChannelService {
             messageRepository = RepositoryFactory.message(name);
             messageRepositories.put(name, messageRepository);
         }
-        cu.save(channel_user);
         List<Message> messageHistory = messageRepository.findAll();
         return messageHistory;
     }
@@ -64,11 +64,21 @@ public class ChannelService {
             throw new Exception("Name already exists ! Please try another one.");
         }
         Channel channel = new Channel(name,pseudo);
-        Repository<ChannelUser> cu=RepositoryFactory.channel_user(name);
-        channeluserRepositories.put(name,cu);
-        cu.save(new ChannelUser(name,pseudo));
         //create message repository with channel name and add to MessageRepository
-        List<Message> messageHistory = this.joinChannel(name, pseudo);
         channelRepository.save(channel);
+        List<Message> messageHistory = this.joinChannel(name, pseudo);
+
     }
+
+    public void sendMessage(Message m)throws Exception{
+        Repository<Message> messageRepository = messageRepositories.get(m.getChannelName());
+        messageRepository.save(m);
+    }
+
+    public void deleteMessage(Message m)throws Exception{
+        Repository<Message> messageRepository = messageRepositories.get(m.getChannelName());
+        messageRepository.delete(m);
+    }
+
+
 }

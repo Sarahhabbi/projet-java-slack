@@ -10,11 +10,12 @@ import service.UserService;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
 
-    private static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+    private static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
     private Socket socket;
 
 
@@ -42,9 +43,6 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
         }
     }
-    public String getJoinedChannel() {
-        return joinedChannel;
-    }
     public void setJoinedChannel(String joinedChannel) {
         this.joinedChannel = joinedChannel;
     }
@@ -54,20 +52,11 @@ public class ClientHandler implements Runnable {
     public void run() {
         /* handle client command & send messages*/
         try {
-            /*String[] command;
-            command = bufferedReader.readLine().split(" ");
-            if(command.length >= 2 && command[0].equals("/")){
-                handleClientChoice(command[1], command[2]);
-                System.out.println(" première commande");
-            }*/
             sendMessage();
         } catch (Exception e) {
-            closeEverything(socket, bufferedReader, writer);
+            closeEverything(this.socket, this.bufferedReader, this.writer);
             e.printStackTrace();
         }
-
-        this.sendMessage();
-        closeEverything(socket, bufferedReader, writer);
     }
 
     public void handleClientChoice(String feature, String arg) throws Exception {
@@ -85,62 +74,81 @@ public class ClientHandler implements Runnable {
 
             case "create":
                 System.out.println(clientUsername + " want to create");
-
-                channelService.createChannel(arg, clientUsername);
-                System.out.println("juste pour que Intellij arrete de souler");
-                setJoinedChannel(arg);
-                broadcastMessage(clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+                this.createChannel(arg);
                 break;
 
             case "join":
-                setJoinedChannel(arg);
-                List<Message> messages=channelService.joinChannel(arg,clientUsername);
-                for (Message m:messages){
-                    writer.println(m.getText());
-                }
-                broadcastMessage( clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+                System.out.println(clientUsername + " want to join");
+                this.joinChannel(arg);
                 break;
-
             case "delete":
+                System.out.println(clientUsername + " want to delete");
                 channelService.deleteChannel(arg,clientUsername);
                 break;
-
             case "exit":
-                closeEverything(socket, bufferedReader, writer);
+                System.out.println(clientUsername + " want to exit");
+                closeEverything(this.socket, this.bufferedReader, this.writer);
                 break;
             default:
                 break;
         }
     }
 
-    public void signUp(String password) {
+    public void joinChannel(String arg) {
+        List<Message> messages = null;
+        try {
+            messages = channelService.joinChannel(arg,clientUsername);
+            for (Message m : messages){
+                writer.println(m.getCreator() + ": "+ m.getText());
+            }
+            setJoinedChannel(arg);
+            broadcastMessage( clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+        } catch (Exception e) {
+            System.out.println("joinChannel debugging ClientHandler");
+            writer.println(e.getMessage()); // renvoie la réponse au client
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void createChannel(String arg) {
+        try {
+            channelService.createChannel(arg, clientUsername);
+            setJoinedChannel(arg);
+            broadcastMessage(clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+            this.writer.println("Congrats you are now admin of "+ arg+ ", share the name to your friends to join !");
+        }catch(Exception e){
+            System.out.println("createChannel debugging");
+            this.writer.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void signUp(String password) {
         try {
             userService.signUp(clientUsername, password);
+            this.writer.println("Congrats you are now members of Slack, try create a channel for more fun");
         } catch (Exception e) {
-            writer.println(e.getMessage());
+            System.out.println("signUp debugging ClientHandler");
+            writer.println(e.getMessage()); // renvoie la réponse au client
             e.printStackTrace();
         }
     }
     public void logIn(String password) {
         try {
             userService.connect(clientUsername, password);
+            this.writer.println("welcome back to Slack "+ clientUsername+", good to see you ! ");
+
         } catch (Exception e) {
-            writer.println(e.getMessage());
+            System.out.println("logIn debugging ClientHandler");
+            writer.println(e.getMessage());  //pour renvoyer la réponse au client
             e.printStackTrace();
         }
     }
 
-   /* public void handleCommand(String[] command){
-        try {
-            handleClientChoice(command[1], command[2]);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
     public void sendMessage(){
         String messageFromClient = null;
 
-        do{
+        while(this.socket.isConnected()){
             try{
                 messageFromClient = bufferedReader.readLine(); // blocking operation but here it's in another thread so no problem
                 String[] words = messageFromClient.split(" ");
@@ -149,36 +157,42 @@ public class ClientHandler implements Runnable {
                     handleClientChoice(words[1],words[2] );
                     System.out.println("handling client choice");
                 }else if(joinedChannel!=null){
-                    broadcastMessage(messageFromClient, joinedChannel);
+                    broadcastMessage(clientUsername+": " +messageFromClient, joinedChannel);
+
                     //create message m
-                    // channelService.sendMessage(Message m);
+                    Message message = new Message(messageFromClient,clientUsername, joinedChannel);
+                    // add to database and memory cache
+                    channelService.sendMessage(message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
             } catch (Exception e) {
                 e.printStackTrace();
+                break;
             }
-        } while(messageFromClient!=null);  // ICI
+        }  // ICI
+        closeEverything(this.socket, this.bufferedReader, this.writer);
     }
 
     public void broadcastMessage(String messageToSend, String channel) {
         System.out.println(">>> broadcastMessage() "+ messageToSend);
 
-        /* iterate over each client and write in every output stream the message except to the client who sent */
-        for(ClientHandler clientHandler : clientHandlers){
-            try{
-                boolean sameChannel = clientHandler.joinedChannel.equals(this.joinedChannel);
-                boolean sameUser = clientHandler.clientUsername.equals(this.clientUsername);
-                if(!sameUser && sameChannel){
-                    clientHandler.writer.println(messageToSend);
+        synchronized(clientHandlers){
+            /* iterate over each client and write in every output stream the message except to the client who sent */
+            for(ClientHandler clientHandler : clientHandlers){
+                try{
+                    boolean sameChannel = clientHandler.joinedChannel.equals(this.joinedChannel);
+                    boolean sameUser = clientHandler.clientUsername.equals(this.clientUsername);
+                    if(!sameUser && sameChannel){
+                        clientHandler.writer.println(messageToSend);
+                    }
+                } catch (Exception e) {
+                    closeEverything(this.socket, this.bufferedReader, this.writer);
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                closeEverything(socket, bufferedReader, writer);
-                e.printStackTrace();
             }
         }
-
     }
 
     public void removeClientHandler(){
@@ -198,10 +212,15 @@ public class ClientHandler implements Runnable {
                 socket.close();
             }
             removeClientHandler();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    public static void closeEverySocket(){
+        for(ClientHandler clientHandler : clientHandlers){
+            clientHandler.closeEverything(clientHandler.socket, clientHandler.bufferedReader, clientHandler.writer);
+        }
     }
 }

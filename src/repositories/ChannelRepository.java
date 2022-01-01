@@ -24,7 +24,7 @@ public class ChannelRepository implements Repository<Channel> {
 
     @Override
     public Channel save(Channel channel) {
-        String req = "INSERT INTO channels (name, adminpseudo) VALUES (?, ?)";
+        String req = "INSERT INTO channels (name, admin_pseudo) VALUES (?, ?)";
         try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, channel.getName());
@@ -32,7 +32,7 @@ public class ChannelRepository implements Repository<Channel> {
 
             ps.executeUpdate();
 
-            System.out.println(channel.getName() + " successfully added to USERS table !");
+            System.out.println(channel.getName() + " successfully added to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -47,8 +47,8 @@ public class ChannelRepository implements Repository<Channel> {
             PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
             ResultSet generatedKeys=ps.executeQuery(req);
             while(generatedKeys.next()){
-                channels.add(new Channel(generatedKeys.getString(1),generatedKeys.getString(2)));
-                System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2));
+                channels.add(new Channel(generatedKeys.getString(2),generatedKeys.getString(1)));
+                System.out.println(generatedKeys.getString(2)+ " "+generatedKeys.getString(1));
             }
             generatedKeys.close();
         }catch (SQLException e) {
@@ -84,7 +84,7 @@ public class ChannelRepository implements Repository<Channel> {
             ps.setString(1, obj.getName());
             ps.setString(2, obj.getAdmin_id());
             ps.executeUpdate();
-            System.out.println(" successfully deleted to USERS table !");
+            System.out.println(" successfully deleted to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -123,7 +123,7 @@ public class ChannelRepository implements Repository<Channel> {
         try {
             PreparedStatement ps = this.DBConnexion.prepareStatement("DELETE FROM channels");
             ps.executeUpdate();
-            System.out.println(" successfully deleted to USERS table !");
+            System.out.println(" successfully deleted to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }

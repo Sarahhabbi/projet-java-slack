@@ -20,12 +20,13 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
     private ChannelUserRepository(Connection DBConnexion,String channelName){
         this.DBConnexion = DBConnexion;
         this.channelName=channelName;
-        ChannelUserRepository.instance.put(channelName,new ChannelUserRepository(DBConnexion,channelName));
     }
 
     public static ChannelUserRepository getInstance(String channelName, Connection DBConnexion){
         if (ChannelUserRepository.instance.get(channelName)== null) {
-            return new ChannelUserRepository(DBConnexion,channelName);
+            ChannelUserRepository cu=new ChannelUserRepository(DBConnexion,channelName);
+            ChannelUserRepository.instance.put(channelName,cu);
+            return cu;
         }
         return instance.get(channelName);
     }
@@ -40,10 +41,11 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
             ps.executeUpdate();
 
             System.out.println(obj.getName() + " successfully added to USERS table !");
-        } catch (SQLException e) {
+        } catch (SQLIntegrityConstraintViolationException c) {
+            System.out.println("You are a member!");
+        }catch (SQLException e) {
             e.printStackTrace();
         }
-
         return obj;
     }
 
@@ -90,12 +92,12 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
 
     @Override
     public List<ChannelUser> findAll() throws FileNotFoundException {
-        String req="SELECT channel_id,user_id FROM channel_users WHERE channel_id=?";
+       // String req="SELECT channel_id,user_id FROM channel_users WHERE channel_id=?";
         ArrayList<ChannelUser> cu = new ArrayList<>();
         try{
-            PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT channel_id,user_id FROM channel_users WHERE channel_id=?");
             ps.setString(1, channelName);
-            ResultSet generatedKeys=ps.executeQuery(req);
+            ResultSet generatedKeys=ps.executeQuery();
             while(generatedKeys.next()){
                 cu.add(new ChannelUser(generatedKeys.getString(1),generatedKeys.getString(2)));
                 System.out.println(generatedKeys.getString(1)+ " "+generatedKeys.getString(2));

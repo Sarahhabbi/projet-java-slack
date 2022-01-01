@@ -28,23 +28,28 @@ public class Client {
     public void sendMessage(){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
-
 //          send messages
             String messageToSend;
             Scanner scanner = new Scanner(System.in);
-            do{
+            /*do{
                 messageToSend = scanner.nextLine();
 
-                String[] words = messageToSend.split(" "); /* if it's a command */
-                if(words[0].equals("/")){
-                    writer.println(messageToSend);
-                }
-                else /* if it's a lambda message */
-                {
-                    writer.println(username+ " : "+ messageToSend);  // handled in ClientHandler
-                }
-            }while(messageToSend!=null);   // ICI
+                String[] words = messageToSend.split(" "); *//* if it's a command *//*
+                writer.println(messageToSend);  // handled in ClientHandler
 
+            }while(messageToSend!=null);   // ICI*/
+
+            while(socket.isConnected()){
+                messageToSend = scanner.nextLine();   // message from client
+
+                String[] words = messageToSend.split(" "); /* if it's an exit command to close everything */
+                if(words.length >= 2 && words[0].equals("/") && words[1].equals("exit")) {
+                    writer.println(messageToSend);
+                    closeEverything(socket, bufferedReader, writer);
+                }
+                writer.println(messageToSend);  // handled in ClientHandler
+            } //ICI
+            closeEverything(socket, bufferedReader, writer);
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
             e.printStackTrace();
@@ -58,7 +63,6 @@ public class Client {
             @Override
             public void run() {
                 String messageFromChat;
-
                 while(socket.isConnected()){
                     try{
                         messageFromChat = bufferedReader.readLine(); // read message broadcasted by CientHandler
@@ -69,7 +73,6 @@ public class Client {
                         break;
                     }
                 }
-
             }
         }).start();
     }
@@ -93,8 +96,8 @@ public class Client {
 
 
     public static void main(String[] args) throws IOException {
-        try
-        {
+        Client client = null;
+        try {
             // ask username
             Scanner scanner = new Scanner(System.in);
             System.out.println("------------ Welcome to Slack ! ------------");
@@ -102,22 +105,24 @@ public class Client {
             String username = scanner.nextLine();
 
             // establish the connection with server port 1234
-            Socket socket = new Socket("localhost", 1234);
+            Socket socket = new Socket("localhost", 8080);
             // create Client
-            Client client = new Client(socket, username);
+            client = new Client(socket, username);
 
-            System.out.println("1 - / signUp password");
-            System.out.println("2 - / logIn password");
-            System.out.println("3 - / create #myNewChannel ");
-            System.out.println("4 - / join #myNewChannel ");
-            System.out.println("5 - / delete #myNewChannel");
-            System.out.println("6 - / exit slack");
+            System.out.println("--------- Enter a command with this format for any action: ---------");
+            System.out.println("/ signUp password");
+            System.out.println("/ logIn password");
+            System.out.println("/ create #myNewChannel ");
+            System.out.println("/ join #myNewChannel ");
+            System.out.println("/ delete #myNewChannel");
+            System.out.println("/ exit slack");
 
             client.listenForMessage();
             client.sendMessage();
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
+            client.closeEverything(client.socket, client.bufferedReader, client.writer);
         }
     }
 }

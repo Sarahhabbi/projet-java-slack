@@ -54,40 +54,5 @@ public class UserService {
         channelRepository.save(channel);
 
     }
-
-   /*public void joinChannel(String name,String pseudo) throws Exception{
-
-        //Channel channel=channelRepository.(name,pseudo);
-        if(channel==null){
-            throw new Exception("You are not a member ");
-        }
-        channelUserRepository.save(channel);
-        this.currentchannel=channel;
-    }*/
-
-    /*public void deleteChannel(String name,String pseudo) throws Exception{
-        Channel channel=channelRepository.find(name);
-        if(channel==null){
-            throw new Exception("There is no channel with this name");
-        }
-
-        if(!channel.getAdmin_id().equals(pseudo)){
-            throw new Exception("You are not the admin of the channel, you can't delete the channel");
-        }
-
-        channelRepository.delete(channel);
-        channelUserRepository.delete(channel);
-
-        this.currentchannel=null;
-    }
-
-    public void quitChannel(String name) throws Exception{
-        if(this.currentchannel==null){
-            throw new Exception("You are already in main page ");
-        }
-        this.currentchannel=null;
-    }*/
-//   public void joinChannel()
-
 }
 
