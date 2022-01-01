@@ -87,6 +87,7 @@ public class ClientHandler implements Runnable {
                 break;
             case "exit":
                 System.out.println(clientUsername + " want to exit");
+//                TODO: exeption quand on veut exit -> le client utilise ses stream dans listenMessage() mais ils ont été fermé donc il faut fermer les thread aussi ?
                 closeEverything(this.socket, this.bufferedReader, this.writer);
                 break;
             default:

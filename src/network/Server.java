@@ -59,4 +59,5 @@ public class Server {
             e.printStackTrace();
         }
     }
+// TODO débuger la boucle infinie quand on déconnecte le server, les clients recoivent 'null' infinement
 }
