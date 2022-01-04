@@ -2,6 +2,7 @@ package network;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class Client {
@@ -28,14 +29,18 @@ public class Client {
     public void sendMessage(){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
-            // send messages
+
+//          send messages
             String messageToSend;
             Scanner scanner = new Scanner(System.in);
+            do{
+                messageToSend = scanner.nextLine();
 
-            while(socket.isConnected()){
-                messageToSend = scanner.nextLine();   // message from client
+                String[] words = messageToSend.split(" "); /* if it's a command */
                 writer.println(messageToSend);  // handled in ClientHandler
-            } //ICI
+
+            }while(messageToSend!=null);   // ICI
+
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
             e.printStackTrace();
@@ -49,16 +54,25 @@ public class Client {
             @Override
             public void run() {
                 String messageFromChat;
+
                 while(socket.isConnected()){
                     try{
                         messageFromChat = bufferedReader.readLine(); // read message broadcasted by CientHandler
                         System.out.println(messageFromChat);
-                    } catch (IOException e) {
+                    } catch (SocketException se) {
                         closeEverything(socket, bufferedReader, writer);
+                        System.out.println("Server is down");
+                        //se.printStackTrace();
+                        break;
+                    }catch (IOException e) {
+
+                        closeEverything(socket, bufferedReader, writer);
+                        System.out.println("ici");
                         e.printStackTrace();
                         break;
                     }
                 }
+
             }
         }).start();
     }
@@ -82,8 +96,8 @@ public class Client {
 
 
     public static void main(String[] args) throws IOException {
-        Client client = null;
-        try {
+        try
+        {
             // ask username
             Scanner scanner = new Scanner(System.in);
             System.out.println("------------ Welcome to Slack ! ------------");
@@ -93,9 +107,8 @@ public class Client {
             // establish the connection with server port 1234
             Socket socket = new Socket("localhost", 8080);
             // create Client
-            client = new Client(socket, username);
+            Client client = new Client(socket, username);
 
-            System.out.println("--------- Enter a command with this format for any action: ---------");
             System.out.println("/ signUp password");
             System.out.println("/ logIn password");
             System.out.println("/ create #myNewChannel ");
@@ -106,9 +119,8 @@ public class Client {
             client.listenForMessage();
             client.sendMessage();
 
-        } catch (Exception e) {
+        }catch(Exception e){
             e.printStackTrace();
-            client.closeEverything(client.socket, client.bufferedReader, client.writer);
         }
     }
 }

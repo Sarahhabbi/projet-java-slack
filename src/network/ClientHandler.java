@@ -23,6 +23,7 @@ public class ClientHandler implements Runnable {
     private PrintWriter writer; //broadcast(write) messages to other clients
     private String clientUsername;
     private String joinedChannel;
+    private boolean isAuthenticated;
 
     private static UserService userService = new UserService();
     private static ChannelService channelService= new ChannelService();
@@ -38,6 +39,8 @@ public class ClientHandler implements Runnable {
             this.joinedChannel = null;
 
             System.out.println("SERVER: " + clientUsername + " is connected to the server !");
+            this.isAuthenticated = false;
+
         } catch (IOException e) {
             closeEverything(socket, bufferedReader, writer);
             e.printStackTrace();
@@ -73,18 +76,32 @@ public class ClientHandler implements Runnable {
                 break;
 
             case "create":
-                System.out.println(clientUsername + " want to create");
-                this.createChannel(arg);
+                if(this.isAuthenticated == true){
+                    System.out.println(clientUsername + " want to create");
+                    this.createChannel(arg);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
                 break;
 
             case "join":
-                System.out.println(clientUsername + " want to join");
-                this.joinChannel(arg);
+                if(this.isAuthenticated == true){
+                    System.out.println(clientUsername + " want to join");
+                    this.joinChannel(arg);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
                 break;
+
             case "delete":
-                System.out.println(clientUsername + " want to delete");
-                channelService.deleteChannel(arg,clientUsername);
+                if(this.isAuthenticated==true){
+                    System.out.println(clientUsername + " want to delete");
+                    channelService.deleteChannel(arg,clientUsername);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
                 break;
+
             case "exit":
                 System.out.println(clientUsername + " want to exit");
 //                TODO: exeption quand on veut exit -> le client utilise ses stream dans listenMessage() mais ils ont été fermé donc il faut fermer les thread aussi ?
@@ -128,6 +145,7 @@ public class ClientHandler implements Runnable {
         try {
             userService.signUp(clientUsername, password);
             this.writer.println("Congrats you are now members of Slack, try create a channel for more fun");
+            this.isAuthenticated = true;
         } catch (Exception e) {
             System.out.println("signUp debugging ClientHandler");
             writer.println(e.getMessage()); // renvoie la réponse au client
@@ -138,7 +156,7 @@ public class ClientHandler implements Runnable {
         try {
             userService.connect(clientUsername, password);
             this.writer.println("welcome back to Slack "+ clientUsername+", good to see you ! ");
-
+            this.isAuthenticated = true;
         } catch (Exception e) {
             System.out.println("logIn debugging ClientHandler");
             writer.println(e.getMessage());  //pour renvoyer la réponse au client
@@ -148,6 +166,35 @@ public class ClientHandler implements Runnable {
 
     public void sendMessage(){
         String messageFromClient = null;
+
+ /*       do{
+            try{
+                messageFromClient = bufferedReader.readLine(); // blocking operation but here it's in another thread so no problem
+                if(messageFromClient!=null){
+                    String[] words = messageFromClient.split(" ");
+
+                    if(words[0].equals("/")){
+                        handleClientChoice(words[1],words[2] );
+                        System.out.println("handling client choice");
+                    }
+                    else if(joinedChannel!=null){
+                        broadcastMessage(clientUsername+": " +messageFromClient, joinedChannel);
+
+                        //create message m
+                        Message message = new Message(messageFromClient,clientUsername, joinedChannel);
+                        // add to database and memory cache
+                        channelService.sendMessage(message);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
+            }
+        }while(messageFromClient!=null );
+*/
 
         while(this.socket.isConnected()){
             try{
@@ -176,7 +223,6 @@ public class ClientHandler implements Runnable {
                 break;
             }
         }  // ICI
-        closeEverything(this.socket, this.bufferedReader, this.writer);
     }
 
     public void broadcastMessage(String messageToSend, String channel) {
