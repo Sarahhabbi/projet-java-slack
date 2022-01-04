@@ -28,28 +28,14 @@ public class Client {
     public void sendMessage(){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
-//          send messages
+            // send messages
             String messageToSend;
             Scanner scanner = new Scanner(System.in);
-            /*do{
-                messageToSend = scanner.nextLine();
-
-                String[] words = messageToSend.split(" "); *//* if it's a command *//*
-                writer.println(messageToSend);  // handled in ClientHandler
-
-            }while(messageToSend!=null);   // ICI*/
 
             while(socket.isConnected()){
                 messageToSend = scanner.nextLine();   // message from client
-
-                String[] words = messageToSend.split(" "); /* if it's an exit command to close everything */
-                if(words.length >= 2 && words[0].equals("/") && words[1].equals("exit")) {
-                    writer.println(messageToSend);
-                    closeEverything(socket, bufferedReader, writer);
-                }
                 writer.println(messageToSend);  // handled in ClientHandler
             } //ICI
-            closeEverything(socket, bufferedReader, writer);
         }catch(Exception e){
             closeEverything(socket, bufferedReader, writer);
             e.printStackTrace();

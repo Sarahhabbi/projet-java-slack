@@ -39,7 +39,7 @@ public class ChannelService {
 
 
         if(channel == null){
-            throw new Exception("This channel didn't exist");
+            throw new Exception("This channel doesn't exist, you can create it with this command: / create " + name);
         }
         ChannelUser channel_user= new ChannelUser(name,pseudo);
         Repository<ChannelUser> cu=channeluserRepositories.get(name);

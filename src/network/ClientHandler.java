@@ -152,18 +152,21 @@ public class ClientHandler implements Runnable {
         while(this.socket.isConnected()){
             try{
                 messageFromClient = bufferedReader.readLine(); // blocking operation but here it's in another thread so no problem
-                String[] words = messageFromClient.split(" ");
+                if(messageFromClient!=null){
+                    String[] words = messageFromClient.split(" ");
 
-                if(words[0].equals("/")){
-                    handleClientChoice(words[1],words[2] );
-                    System.out.println("handling client choice");
-                }else if(joinedChannel!=null){
-                    broadcastMessage(clientUsername+": " +messageFromClient, joinedChannel);
+                    if(words[0].equals("/")){
+                        handleClientChoice(words[1],words[2] );
+                        System.out.println("handling client choice");
+                    }
+                    else if(joinedChannel!=null){
+                        broadcastMessage(clientUsername+": " +messageFromClient, joinedChannel);
 
-                    //create message m
-                    Message message = new Message(messageFromClient,clientUsername, joinedChannel);
-                    // add to database and memory cache
-                    channelService.sendMessage(message);
+                        //create message m
+                        Message message = new Message(messageFromClient,clientUsername, joinedChannel);
+                        // add to database and memory cache
+                        channelService.sendMessage(message);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -183,10 +186,12 @@ public class ClientHandler implements Runnable {
             /* iterate over each client and write in every output stream the message except to the client who sent */
             for(ClientHandler clientHandler : clientHandlers){
                 try{
-                    boolean sameChannel = clientHandler.joinedChannel.equals(this.joinedChannel);
-                    boolean sameUser = clientHandler.clientUsername.equals(this.clientUsername);
-                    if(!sameUser && sameChannel){
-                        clientHandler.writer.println(messageToSend);
+                    if(this.joinedChannel!=null && this.clientUsername!=null){
+                        boolean sameChannel = clientHandler.joinedChannel.equals(this.joinedChannel);
+                        boolean sameUser = clientHandler.clientUsername.equals(this.clientUsername);
+                        if(!sameUser && sameChannel){
+                            clientHandler.writer.println(messageToSend);
+                        }
                     }
                 } catch (Exception e) {
                     closeEverything(this.socket, this.bufferedReader, this.writer);
@@ -198,7 +203,7 @@ public class ClientHandler implements Runnable {
 
     public void removeClientHandler(){
         clientHandlers.remove(this);
-        broadcastMessage("SERVER: "+ clientUsername+ " has left "+ joinedChannel, joinedChannel);
+//        broadcastMessage("SERVER: "+ clientUsername+ " has left "+ joinedChannel, joinedChannel);
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, PrintWriter writer) {
