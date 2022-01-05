@@ -1,8 +1,8 @@
 package models;
 
-public class ChannelUser implements HasId_Channel{
-    private String channelName;
-    private String userName;
+public class ChannelUser implements HasId{
+    private final String channelName;
+    private final String userName;
 
     public ChannelUser(String channelName, String userName) {
         this.channelName = channelName;

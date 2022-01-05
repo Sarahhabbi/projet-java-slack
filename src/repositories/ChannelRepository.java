@@ -32,7 +32,6 @@ public class ChannelRepository implements Repository<Channel> {
 
             ps.executeUpdate();
 
-            System.out.println(channel.getName() + " successfully added to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -65,7 +64,7 @@ public class ChannelRepository implements Repository<Channel> {
             ps.setString(2, obj.getAdmin_id());
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 System.out.println(res.getString(1)+ " "+res.getString(2));
                 return true;
             }
@@ -84,7 +83,6 @@ public class ChannelRepository implements Repository<Channel> {
             ps.setString(1, obj.getName());
             ps.setString(2, obj.getAdmin_id());
             ps.executeUpdate();
-            System.out.println(" successfully deleted to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -97,7 +95,7 @@ public class ChannelRepository implements Repository<Channel> {
             ps.setString(1, name);
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 Channel u=new Channel(res.getString(1),res.getString(2));
                 System.out.println(u.getName()+" "+u.getAdmin_id());
                 res.close();
@@ -111,6 +109,8 @@ public class ChannelRepository implements Repository<Channel> {
         return null;
     }
 
+
+
     public List<Channel> saveAll(List<Channel> users) {
         for(Channel element:users){
             save(element);
@@ -123,7 +123,6 @@ public class ChannelRepository implements Repository<Channel> {
         try {
             PreparedStatement ps = this.DBConnexion.prepareStatement("DELETE FROM channels");
             ps.executeUpdate();
-            System.out.println(" successfully deleted to CHANNEL_USERS table !");
         } catch (SQLException e) {
             e.printStackTrace();
         }

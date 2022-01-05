@@ -1,11 +1,11 @@
 package models;
 
-import java.net.Socket;
+
 
 public class User implements HasId {
 
     private final String pseudo;
-    private String password;
+    private final String password;
 
     public User(String pseudo, String password) {
         this.pseudo = pseudo;
@@ -20,6 +20,5 @@ public class User implements HasId {
     }
 
     public String getPassword() { return password;}
-    public void setPassword(String password) { this.password = password;}
 
 }

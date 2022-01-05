@@ -52,9 +52,9 @@ public class Client {
 
             @Override
             public void run() {
-                String messageFromChat;
+                String messageFromChat=" ";
 
-                while(socket.isConnected()){
+                while(messageFromChat != null){
                     try{
                         messageFromChat = bufferedReader.readLine(); // read message broadcasted by CientHandler
                         System.out.println(messageFromChat);
@@ -64,14 +64,14 @@ public class Client {
                         //se.printStackTrace();
                         break;
                     }catch (IOException e) {
-
                         closeEverything(socket, bufferedReader, writer);
                         System.out.println("ici");
                         e.printStackTrace();
                         break;
                     }
                 }
-
+                System.out.println("Server is down");
+                closeEverything(socket, bufferedReader, writer);
             }
         }).start();
     }
@@ -111,6 +111,9 @@ public class Client {
             System.out.println("/ signUp password");
             System.out.println("/ logIn password");
             System.out.println("/ create #myNewChannel ");
+            System.out.println("/ createPrivate #myNewChannel ");
+            System.out.println("/ addMember #myNewChannel ");
+            System.out.println("/ deleteMember #myNewChannel ");
             System.out.println("/ join #myNewChannel ");
             System.out.println("/ delete #myNewChannel");
             System.out.println("/ displayConnectedMembers #myNewChannel");
