@@ -1,11 +1,12 @@
 package service;
 import models.Channel;
 import models.ChannelUser;
-import models.User;
+
 import models.Message;
-import repositories.ChannelUserRepository;
+
 import repositories.Repository;
 import repositories.RepositoryFactory;
+
 
 
 import java.util.HashMap;
@@ -24,29 +25,39 @@ public class ChannelService {
         if(channel==null){
             throw new Exception("This channel didn't exist");
         }
-        if(channel.getAdmin_id().equals(pseudo) ){
-            channelRepository.delete(channel);
-            ChannelUser channel_user= new ChannelUser(name,pseudo);
-            channeluserRepositories.get(name).delete(channel_user);
-        }
-        else{
+        if(! channel.getAdmin_id().equals(pseudo) ){
             throw new Exception("Action denied, only admin who can delete this channel ");
         }
-    }
-
-    public List<Message> joinChannel(String name,String pseudo) throws Exception {
-        Channel channel = channelRepository.find(name);
-
-
-        if(channel == null){
-            throw new Exception("This channel doesn't exist, you can create it with this command: / create " + name);
+        if(channel.getIsPrivate()==0){
+            channelRepository.delete(channel);
         }
-        ChannelUser channel_user= new ChannelUser(name,pseudo);
         Repository<ChannelUser> cu=channeluserRepositories.get(name);
         if(cu==null){
             cu=RepositoryFactory.channel_user(name);
             channeluserRepositories.put(name,cu);
-            cu.save(channel_user);
+        }
+        List<ChannelUser> members=cu.findAll();
+        for(int i=0;i<members.size();i++){
+            cu.delete(members.get(i));
+        }
+        channelRepository.delete(channel);
+    }
+
+    public List<Message> joinChannel(String name,String pseudo) throws Exception {
+        Channel channel = channelRepository.find(name);
+        System.out.println(name +" "+pseudo);
+        if(channel == null){
+            throw new Exception("This channel doesn't exist, you can create it with this command: / create " + name);
+        }
+        if (channel.getIsPrivate()==1){
+            Repository<ChannelUser> cu=channeluserRepositories.get(name);
+            if(cu==null){
+                cu=RepositoryFactory.channel_user(name);
+                channeluserRepositories.put(name,cu);
+            }
+            if(cu.exists(new ChannelUser(name, pseudo))){
+                throw new Exception("This channel is private and you are not a member !");
+            }
         }
 
         //récuperer l'historique des messages d'un channel
@@ -56,28 +67,91 @@ public class ChannelService {
             messageRepositories.put(name, messageRepository);
         }
         List<Message> messageHistory = messageRepository.findAll();
+        System.out.println("Service");
+        for (int i=0;i< messageHistory.size();i++){
+
+            System.out.println(messageHistory.get(i).getCreator() + ": "+messageHistory.get(i).getText());
+        }
         return messageHistory;
     }
 
-    public void createChannel(String name,String pseudo) throws Exception {
+    public void createChannel(String name,String pseudo,int isPrivate) throws Exception {
         if(channelRepository.find(name)!=null) {
             throw new Exception("Name already exists ! Please try another one.");
         }
-        Channel channel = new Channel(name,pseudo);
+        Channel channel = new Channel(name,pseudo,isPrivate);
         //create message repository with channel name and add to MessageRepository
         channelRepository.save(channel);
-        List<Message> messageHistory = this.joinChannel(name, pseudo);
+        if(isPrivate==1){
+            Repository<ChannelUser> cu=RepositoryFactory.channel_user(name);
+            channeluserRepositories.put(name,cu);
+            ChannelUser admin=new ChannelUser(name, pseudo);
+            cu.save(admin);
+        }
+        this.joinChannel(name, pseudo);
+    }
+
+    public void addMemberChannel(String name, String pseudo,String user)throws Exception{
+        Channel channel = channelRepository.find(name);
+        if (channel == null) {
+            throw new Exception("This channel didn't exist");
+        }
+        if (! channel.getAdmin_id().equals(pseudo)) {
+            throw new Exception("Action denied, only admin can add members");
+        }
+        Repository<ChannelUser> cu=channeluserRepositories.get(name);
+        if(cu==null){
+            cu=RepositoryFactory.channel_user(name);
+            channeluserRepositories.put(name,cu);
+        }
+        cu.save(new ChannelUser(name, user));
 
     }
 
-    public void sendMessage(Message m)throws Exception{
+    public void deleteMemberChannel(String name, String pseudo,String user)throws Exception{
+        Channel channel = channelRepository.find(name);
+        if (channel == null) {
+            throw new Exception("This channel didn't exist");
+        }
+        if (! channel.getAdmin_id().equals(pseudo)) {
+            throw new Exception("Action denied, only admin can add members");
+        }
+        Repository<ChannelUser> cu=channeluserRepositories.get(name);
+        if(cu==null){
+            cu=RepositoryFactory.channel_user(name);
+            channeluserRepositories.put(name,cu);
+        }
+        cu.delete(new ChannelUser(name, user));
+
+    }
+
+    public void sendMessage(Message m){
         Repository<Message> messageRepository = messageRepositories.get(m.getChannelName());
         messageRepository.save(m);
     }
 
-    public void deleteMessage(Message m)throws Exception{
+    public List<Message> deleteMessage(Message m)throws Exception{
         Repository<Message> messageRepository = messageRepositories.get(m.getChannelName());
         messageRepository.delete(m);
+        List<Message> messageHistory = messageRepository.findAll();
+        System.out.println("Service");
+        for (int i=0;i< messageHistory.size();i++){
+
+            System.out.println(messageHistory.get(i).getCreator() + ": "+messageHistory.get(i).getText());
+        }
+        return messageHistory;
+    }
+
+    public List<Message> EditMessage(Message m)throws Exception{
+        Repository<Message> messageRepository = messageRepositories.get(m.getChannelName());
+        messageRepository.delete(m);
+        List<Message> messageHistory = messageRepository.findAll();
+        System.out.println("Service");
+        for (int i=0;i< messageHistory.size();i++){
+
+            System.out.println(messageHistory.get(i).getCreator() + ": "+messageHistory.get(i).getText());
+        }
+        return messageHistory;
     }
 
 

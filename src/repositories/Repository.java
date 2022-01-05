@@ -1,23 +1,19 @@
 package repositories;
 
-import caches.MemoryCache;
+
 import models.HasId;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 public interface Repository<T extends HasId> {
 
     T save(T obj);
 
-    void delete(T obj) throws FileNotFoundException, Exception;
+    void delete(T obj) throws Exception;
 
-    List<T> findAll() throws FileNotFoundException;
+    List<T> findAll() ;
 
-    T find(String id) throws FileNotFoundException;
-
-    //T findById(String id) throws FileNotFoundException;
-
+    T find(String id);
 
     boolean exists(T obj) ;
 }

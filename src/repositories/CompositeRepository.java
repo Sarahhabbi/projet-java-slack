@@ -3,12 +3,8 @@ package repositories;
 import caches.MemoryCache;
 import models.HasId;
 
-import java.io.FileNotFoundException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
+
 
 public class CompositeRepository<T extends HasId> implements Repository<T> {
 
@@ -17,14 +13,10 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
 
     public CompositeRepository(Repository<T> file) {
         this.memory= new MemoryCache<>();
-        try {
-            List<T> r = file.findAll();
-            for (T element : r) {
-                this.memory.save(element);
-                System.out.println("Element ajoute "+ element.getName());
-            }
-        }catch(FileNotFoundException fne){
-            fne.printStackTrace();
+        List<T> r = file.findAll();
+        for (T element : r) {
+            this.memory.save(element);
+            System.out.println("Element ajoute "+ element.getName());
         }
         this.file = file;
     }
@@ -42,12 +34,12 @@ public class CompositeRepository<T extends HasId> implements Repository<T> {
     }
 
     @Override
-    public List<T> findAll() throws FileNotFoundException {
+    public List<T> findAll() {
         return memory.findAll();
     }
 
     @Override
-    public T find(String id) throws FileNotFoundException {
+    public T find(String id){
         return (T)memory.find(id);
     }
 

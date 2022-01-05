@@ -2,8 +2,8 @@ package repositories;
 
 
 
+import models.Channel;
 import models.ChannelUser;
-import models.Message;
 
 import java.io.FileNotFoundException;
 import java.sql.*;
@@ -65,7 +65,7 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
 
 
     @Override
-    public ChannelUser find(String id) throws FileNotFoundException {
+    public ChannelUser find(String id){
 
         return null;
     }
@@ -78,7 +78,7 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
             ps.setString(2, obj.getUserName());
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 System.out.println(res.getString(1)+ " "+res.getString(2));
                 return true;
             }
@@ -91,8 +91,7 @@ public class ChannelUserRepository implements Repository<ChannelUser>{
 
 
     @Override
-    public List<ChannelUser> findAll() throws FileNotFoundException {
-       // String req="SELECT channel_id,user_id FROM channel_users WHERE channel_id=?";
+    public List<ChannelUser> findAll() {
         ArrayList<ChannelUser> cu = new ArrayList<>();
         try{
             PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT channel_id,user_id FROM channel_users WHERE channel_id=?");

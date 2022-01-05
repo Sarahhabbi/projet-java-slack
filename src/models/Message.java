@@ -1,28 +1,24 @@
 package models;
 
 
-import database.Database;
 
-import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Message implements HasId_Channel {
+public class Message implements HasId {
 
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     private static final String currentDate = DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss").format(LocalDateTime.now());
 
-    private static final Database DATABASE = Database.getInstance("jdbc:mysql://localhost:3306/slack", "root", "poudebs91");
-
     private final String id;
     private String text;
     private final String creator;
-    private String channelName;
+    private final String channelName;
 
 
     public Message(String text,String creator,String channelName) {
-        id = Long.toString(ID_GENERATOR.incrementAndGet()) + currentDate;
+        id = Long.toString(ID_GENERATOR.incrementAndGet()) + "_"+currentDate;
         this.text = text;
         this.creator=creator;
         this.channelName=channelName;

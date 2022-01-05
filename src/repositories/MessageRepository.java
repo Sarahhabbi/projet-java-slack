@@ -5,6 +5,8 @@ import models.Message;
 
 import java.io.FileNotFoundException;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +33,14 @@ public class MessageRepository implements Repository<Message>{
 
     @Override
     public Message save(Message message) {
-        String req = "INSERT INTO groupeMessages (message_id,user_id,channel_id,message,date) VALUES (?,?,?,?,CURRENT_TIMESTAMP)";
+        String req = "INSERT INTO groupeMessages (message_id,user_id,channel_id,message,mdate) VALUES (?,?,?,?,?)";
         try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, message.getName());
             ps.setString(2, message.getCreator());
             ps.setString(3, message.getChannelName());
             ps.setString(4, message.getText());
-            ps.executeUpdate();
+            ps.setString(5, DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss").format(LocalDateTime.now()));
 
             System.out.println(message.getName() + " successfully added to MESSAGE table !");
         } catch (SQLException e) {
@@ -63,13 +65,13 @@ public class MessageRepository implements Repository<Message>{
 
 
     @Override
-    public Message find(String id) throws FileNotFoundException {
+    public Message find(String id){
         try {
             PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT message,user_id,channel_id FROM groupeMessages WHERE message_id=?");
             ps.setString(1, id);
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 Message u=new Message(id,res.getString(1),res.getString(2),res.getString(3));
 
                 res.close();
@@ -90,8 +92,9 @@ public class MessageRepository implements Repository<Message>{
             ps.setString(1, obj.getName());
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 System.out.println(res.getString(1)+ " "+res.getString(2));
+                res.close();
                 return true;
             }
             res.close();
@@ -102,10 +105,10 @@ public class MessageRepository implements Repository<Message>{
     }
 
     @Override
-    public List<Message> findAll() throws FileNotFoundException {
+    public List<Message> findAll(){
         ArrayList<Message> messages = new ArrayList<>();
         try{
-            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT message_id,message,user_id,channel_id FROM groupeMessages WHERE channel_id=?");
+            PreparedStatement ps = this.DBConnexion.prepareStatement("SELECT message_id,message,user_id,channel_id FROM groupeMessages WHERE channel_id=? ORDER BY mdate");
             ps.setString(1, channelName);
             ResultSet generatedKeys=ps.executeQuery();
             while(generatedKeys.next()){
@@ -118,4 +121,7 @@ public class MessageRepository implements Repository<Message>{
         }
         return messages;
     }
+
+
+
 }

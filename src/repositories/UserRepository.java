@@ -66,7 +66,7 @@ public class UserRepository implements Repository<User> {
             ps.setString(2, obj.getPassword());
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 System.out.println(res.getString(1)+ " "+res.getString(2));
                 return true;
             }
@@ -101,7 +101,7 @@ public class UserRepository implements Repository<User> {
             ps.setString(1, name);
 
             ResultSet res=ps.executeQuery();
-            while(res.next()){
+            if(res.next()){
                 User u=new User(res.getString(1),res.getString(2));
                 System.out.println(u.getPseudo()+" "+u.getPassword());
                 res.close();
