@@ -25,7 +25,6 @@ public class Client {
         }
     }
 
-
     public void sendMessage(){
         try{
             writer.println(username); // le user écrit d'abord son nom dans son output stream avant d'envoyer des messages
@@ -94,7 +93,6 @@ public class Client {
         }
     }
 
-
     public static void main(String[] args) throws IOException {
         try
         {
@@ -106,6 +104,7 @@ public class Client {
 
             // establish the connection with server port 1234
             Socket socket = new Socket("localhost", 8080);
+
             // create Client
             Client client = new Client(socket, username);
 
@@ -114,6 +113,7 @@ public class Client {
             System.out.println("/ create #myNewChannel ");
             System.out.println("/ join #myNewChannel ");
             System.out.println("/ delete #myNewChannel");
+            System.out.println("/ displayConnectedMembers #myNewChannel");
             System.out.println("/ exit slack");
 
             client.listenForMessage();

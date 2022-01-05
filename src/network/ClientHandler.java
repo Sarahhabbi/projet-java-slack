@@ -62,56 +62,6 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public void handleClientChoice(String feature, String arg) throws Exception {
-        switch(feature){
-
-            case "signUp":
-                System.out.println(clientUsername + " want to signUp");
-                this.signUp(arg);
-                break;
-
-            case "logIn":
-                System.out.println(clientUsername + " want to logIn");
-                this.logIn(arg);
-                break;
-
-            case "create":
-                if(this.isAuthenticated == true){
-                    System.out.println(clientUsername + " want to create");
-                    this.createChannel(arg);
-                }else{
-                    writer.println("You must logIn or SignUp first !");
-                }
-                break;
-
-            case "join":
-                if(this.isAuthenticated == true){
-                    System.out.println(clientUsername + " want to join");
-                    this.joinChannel(arg);
-                }else{
-                    writer.println("You must logIn or SignUp first !");
-                }
-                break;
-
-            case "delete":
-                if(this.isAuthenticated==true){
-                    System.out.println(clientUsername + " want to delete");
-                    channelService.deleteChannel(arg,clientUsername);
-                }else{
-                    writer.println("You must logIn or SignUp first !");
-                }
-                break;
-
-            case "exit":
-                System.out.println(clientUsername + " want to exit");
-//                TODO: exeption quand on veut exit -> le client utilise ses stream dans listenMessage() mais ils ont été fermé donc il faut fermer les thread aussi ?
-                closeEverything(this.socket, this.bufferedReader, this.writer);
-                break;
-            default:
-                break;
-        }
-    }
-
     public void joinChannel(String arg) {
         List<Message> messages = null;
         try {
@@ -164,37 +114,26 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    public void displayConnectedMembers(String arg){
+        synchronized(clientHandlers){
+            /* iterate over each client and write in every output stream the message except to the client who sent */                    ArrayList<ClientHandler> members = new ArrayList<>();
+            ArrayList<ClientHandler> member = new ArrayList<>();
+            writer.println("Currently connected to " + arg);
+            for(ClientHandler clientHandler : clientHandlers){
+                try{
+                    if(this.joinedChannel!=null && clientHandler.joinedChannel.equals(arg) && this.joinedChannel.equals(arg) && this.clientUsername!=null){
+                        writer.println(clientHandler.clientUsername);
+                    }
+                } catch (Exception e) {
+                    closeEverything(this.socket, this.bufferedReader, this.writer);
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void sendMessage(){
         String messageFromClient = null;
-
- /*       do{
-            try{
-                messageFromClient = bufferedReader.readLine(); // blocking operation but here it's in another thread so no problem
-                if(messageFromClient!=null){
-                    String[] words = messageFromClient.split(" ");
-
-                    if(words[0].equals("/")){
-                        handleClientChoice(words[1],words[2] );
-                        System.out.println("handling client choice");
-                    }
-                    else if(joinedChannel!=null){
-                        broadcastMessage(clientUsername+": " +messageFromClient, joinedChannel);
-
-                        //create message m
-                        Message message = new Message(messageFromClient,clientUsername, joinedChannel);
-                        // add to database and memory cache
-                        channelService.sendMessage(message);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;
-            }
-        }while(messageFromClient!=null );
-*/
 
         while(this.socket.isConnected()){
             try{
@@ -232,7 +171,7 @@ public class ClientHandler implements Runnable {
             /* iterate over each client and write in every output stream the message except to the client who sent */
             for(ClientHandler clientHandler : clientHandlers){
                 try{
-                    if(this.joinedChannel!=null && this.clientUsername!=null){
+                    if(this.joinedChannel!=null && this.clientUsername!=null && clientHandler.joinedChannel != null && clientHandler.clientUsername!=null){
                         boolean sameChannel = clientHandler.joinedChannel.equals(this.joinedChannel);
                         boolean sameUser = clientHandler.clientUsername.equals(this.clientUsername);
                         if(!sameUser && sameChannel){
@@ -246,10 +185,65 @@ public class ClientHandler implements Runnable {
             }
         }
     }
+    public void handleClientChoice(String feature, String arg) throws Exception {
+        switch(feature){
+
+            case "signUp":
+                System.out.println(clientUsername + " want to signUp");
+                this.signUp(arg);
+                break;
+
+            case "logIn":
+                System.out.println(clientUsername + " want to logIn");
+                this.logIn(arg);
+                break;
+
+            case "create":
+                if(this.isAuthenticated == true){
+                    System.out.println(clientUsername + " want to create");
+                    this.createChannel(arg);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
+                break;
+
+            case "join":
+                if(this.isAuthenticated == true){
+                    System.out.println(clientUsername + " want to join");
+                    this.joinChannel(arg);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
+                break;
+
+            case "delete":
+                if(this.isAuthenticated==true){
+                    System.out.println(clientUsername + " want to delete");
+                    channelService.deleteChannel(arg,clientUsername);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
+                break;
+
+            case "displayConnectedMembers":
+                if(this.isAuthenticated==true){
+                    System.out.println(clientUsername + " want to know members of "+ arg);
+                    this.displayConnectedMembers(arg);
+                }else{
+                    writer.println("You must logIn or SignUp first !");
+                }
+                break;
+            case "exit":
+                System.out.println(clientUsername + " want to exit");
+                closeEverything(this.socket, this.bufferedReader, this.writer);
+                break;
+            default:
+                break;
+        }
+    }
 
     public void removeClientHandler(){
         clientHandlers.remove(this);
-//        broadcastMessage("SERVER: "+ clientUsername+ " has left "+ joinedChannel, joinedChannel);
     }
 
     public void closeEverything(Socket socket, BufferedReader bufferedReader, PrintWriter writer) {
@@ -270,9 +264,4 @@ public class ClientHandler implements Runnable {
 
     }
 
-    public static void closeEverySocket(){
-        for(ClientHandler clientHandler : clientHandlers){
-            clientHandler.closeEverything(clientHandler.socket, clientHandler.bufferedReader, clientHandler.writer);
-        }
-    }
 }
