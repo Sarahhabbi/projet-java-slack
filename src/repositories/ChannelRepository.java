@@ -24,12 +24,12 @@ public class ChannelRepository implements Repository<Channel> {
 
     @Override
     public Channel save(Channel channel) {
-        String req = "INSERT INTO channels (name, admin_pseudo) VALUES (?, ?)";
+        String req = "INSERT INTO channels (name, admin_pseudo,isprivate) VALUES (?, ?,?)";
         try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, channel.getName());
             ps.setString(2, channel.getAdmin_id());
-
+            ps.setInt(3, channel.getIsPrivate());
             ps.executeUpdate();
 
         } catch (SQLException e) {

@@ -9,7 +9,7 @@ import database.Database;
 
 public class RepositoryFactory {
 
-    private static final Database DATABASE = Database.getInstance("jdbc:mysql://localhost:3306/slack", "root", "poudebs91");
+    private static final Database DATABASE = Database.getInstance("jdbc:mysql://localhost:3306/slack", "root", "Siyani=17");
 
     public static Repository<User> user() {
         return new CompositeRepository<>(UserRepository.getInstance(DATABASE.getConnection()));

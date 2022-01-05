@@ -55,7 +55,7 @@ public class ChannelService {
                 cu=RepositoryFactory.channel_user(name);
                 channeluserRepositories.put(name,cu);
             }
-            if(cu.exists(new ChannelUser(name, pseudo))){
+            if(cu.exists(new ChannelUser(name,pseudo))==false){
                 throw new Exception("This channel is private and you are not a member !");
             }
         }
@@ -87,8 +87,10 @@ public class ChannelService {
             channeluserRepositories.put(name,cu);
             ChannelUser admin=new ChannelUser(name, pseudo);
             cu.save(admin);
+
         }
         this.joinChannel(name, pseudo);
+
     }
 
     public void addMemberChannel(String name, String pseudo,String user)throws Exception{

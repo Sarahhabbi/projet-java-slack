@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 public class ClientHandler implements Runnable {
 
     private static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
@@ -59,6 +58,108 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             closeEverything(this.socket, this.bufferedReader, this.writer);
             e.printStackTrace();
+        }
+    }
+
+    public void joinChannel(String arg) {
+        List<Message> messages = null;
+        try {
+            messages = channelService.joinChannel(arg,clientUsername);
+            for (Message m : messages){
+                writer.println(m.getCreator() + ": "+ m.getText());
+            }
+            setJoinedChannel(arg);
+            broadcastMessage( clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+        } catch (Exception e) {
+            System.out.println("joinChannel debugging ClientHandler");
+            writer.println(e.getMessage()); // renvoie la réponse au client
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void createChannel(String arg,int isPrivate) {
+        try {
+            channelService.createChannel(arg, clientUsername,isPrivate);
+            setJoinedChannel(arg);
+            broadcastMessage(clientUsername+ " has entered "+ joinedChannel, joinedChannel);
+            this.writer.println("Congrats you are now admin of "+ arg+ ", share the name to your friends to join !");
+            if(isPrivate==1){
+                this.writer.println("You need to add member then you can invite them by sharing the channel name!");
+            }else{
+                this.writer.println("You can invite them by sharing the channel name!");
+            }
+        }catch(Exception e){
+            System.out.println("createChannel debugging");
+            this.writer.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void signUp(String password) {
+        try {
+            userService.signUp(clientUsername, password);
+            this.writer.println("Congrats you are now members of Slack, try create a channel for more fun");
+            this.isAuthenticated = true;
+        } catch (Exception e) {
+            System.out.println("signUp debugging ClientHandler");
+            writer.println(e.getMessage()); // renvoie la réponse au client
+            e.printStackTrace();
+        }
+    }
+
+    public void addMember(String channel){
+        this.writer.println("Please put a pseudo");
+        try {
+            String pseudo= bufferedReader.readLine();
+            channelService.addMemberChannel(channel,clientUsername,pseudo);
+            this.writer.println(pseudo+" ajouté");
+        }catch (IOException ie) {
+            ie.printStackTrace();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteMember(String channel){
+        this.writer.println("Please put a pseudo");
+        try {
+            String pseudo= bufferedReader.readLine();
+            channelService.deleteMemberChannel(channel,clientUsername,pseudo);
+            this.writer.println(pseudo+" retiré");
+        }catch (IOException ie) {
+            ie.printStackTrace();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logIn(String password) {
+        try {
+            userService.connect(clientUsername, password);
+            this.writer.println("welcome back to Slack "+ clientUsername+", good to see you ! ");
+            this.isAuthenticated = true;
+        } catch (Exception e) {
+            System.out.println("logIn debugging ClientHandler");
+            writer.println(e.getMessage());  //pour renvoyer la réponse au client
+            e.printStackTrace();
+        }
+    }
+
+    public void displayConnectedMembers(String arg){
+        synchronized(clientHandlers){
+            /* iterate over each client and write in every output stream the message except to the client who sent */                    ArrayList<ClientHandler> members = new ArrayList<>();
+            ArrayList<ClientHandler> member = new ArrayList<>();
+            writer.println("Currently connected to " + arg);
+            for(ClientHandler clientHandler : clientHandlers){
+                try{
+                    if(this.joinedChannel!=null && clientHandler.joinedChannel.equals(arg) && this.joinedChannel.equals(arg) && this.clientUsername!=null){
+                        writer.println(clientHandler.clientUsername);
+                    }
+                } catch (Exception e) {
+                    closeEverything(this.socket, this.bufferedReader, this.writer);
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -119,109 +220,6 @@ public class ClientHandler implements Runnable {
             }
         }
     }
-
-    public synchronized void signUp(String password) {
-        try {
-            userService.signUp(clientUsername, password);
-            this.writer.println("Congrats you are now members of Slack, try create a channel for more fun");
-            this.isAuthenticated = true;
-        } catch (Exception e) {
-            System.out.println("signUp debugging ClientHandler");
-            writer.println(e.getMessage()); // renvoie la réponse au client
-            e.printStackTrace();
-        }
-    }
-
-    public void logIn(String password) {
-        try {
-            userService.connect(clientUsername, password);
-            this.writer.println("welcome back to Slack "+ clientUsername+", good to see you ! ");
-            this.isAuthenticated = true;
-        } catch (Exception e) {
-            System.out.println("logIn debugging ClientHandler");
-            writer.println(e.getMessage());  //pour renvoyer la réponse au client
-            e.printStackTrace();
-        }
-    }
-
-    public void joinChannel(String arg) {
-        List<Message> messages = null;
-        try {
-            messages = channelService.joinChannel(arg,clientUsername);
-            for (Message m : messages){
-                writer.println(m.getCreator() + ": "+ m.getText());
-            }
-            setJoinedChannel(arg);
-            broadcastMessage( clientUsername+ " has entered "+ joinedChannel, joinedChannel);
-        } catch (Exception e) {
-            System.out.println("joinChannel debugging ClientHandler");
-            writer.println(e.getMessage()); // renvoie la réponse au client
-            e.printStackTrace();
-        }
-    }
-
-    public synchronized void createChannel(String arg,int isPrivate) {
-        try {
-            channelService.createChannel(arg, clientUsername,isPrivate);
-            setJoinedChannel(arg);
-            broadcastMessage(clientUsername+ " has entered "+ joinedChannel, joinedChannel);
-            this.writer.println("Congrats you are now admin of "+ arg);
-            if(isPrivate==1){
-                this.writer.println("You need to add member then you can invite them by sharing the channel name!");
-            }else{
-                this.writer.println("You can invite them by sharing the channel name!");
-            }
-        }catch(Exception e){
-            System.out.println("createChannel debugging");
-            this.writer.println(e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void addMember(String channel){
-        this.writer.println("Please put a pseudo");
-        try {
-            String pseudo= bufferedReader.readLine();
-            channelService.addMemberChannel(channel,clientUsername,pseudo);
-            this.writer.println(pseudo+" ajouté");
-        }catch (IOException ie) {
-            ie.printStackTrace();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteMember(String channel){
-        this.writer.println("Please put a pseudo");
-        try {
-            String pseudo= bufferedReader.readLine();
-            channelService.deleteMemberChannel(channel,clientUsername,pseudo);
-            this.writer.println(pseudo+" retiré");
-        }catch (IOException ie) {
-            ie.printStackTrace();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void displayConnectedMembers(String arg){
-        synchronized(clientHandlers){
-            /* iterate over each client and write in every output stream the message except to the client who sent */                    ArrayList<ClientHandler> members = new ArrayList<>();
-            ArrayList<ClientHandler> member = new ArrayList<>();
-            writer.println("Currently connected to " + arg);
-            for(ClientHandler clientHandler : clientHandlers){
-                try{
-                    if(this.joinedChannel!=null && clientHandler.joinedChannel.equals(arg) && this.joinedChannel.equals(arg) && this.clientUsername!=null){
-                        writer.println(clientHandler.clientUsername);
-                    }
-                } catch (Exception e) {
-                    closeEverything(this.socket, this.bufferedReader, this.writer);
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     public void handleClientChoice(String feature, String arg) throws Exception {
         switch(feature){
 

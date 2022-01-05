@@ -33,15 +33,17 @@ public class MessageRepository implements Repository<Message>{
 
     @Override
     public Message save(Message message) {
-        String req = "INSERT INTO groupeMessages (message_id,user_id,channel_id,message,mdate) VALUES (?,?,?,?,?)";
-        try (PreparedStatement ps = this.DBConnexion.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
+        System.out.println("Message à rajouté"+message.getName());
+        //String req = "INSERT INTO groupeMessages (message_id,user_id,channel_id,message,mdate) VALUES (?,?,?,?,CURRENT_TIMESTAMP)";
+
+        try (PreparedStatement ps = this.DBConnexion.prepareStatement("INSERT INTO groupeMessages (message_id,user_id,channel_id,message,mdate) VALUES (?,?,?,?,?)")) {
 
             ps.setString(1, message.getName());
             ps.setString(2, message.getCreator());
             ps.setString(3, message.getChannelName());
             ps.setString(4, message.getText());
             ps.setString(5, DateTimeFormatter.ofPattern("uuuu/MM/dd HH:mm:ss").format(LocalDateTime.now()));
-
+            ps.executeUpdate();
             System.out.println(message.getName() + " successfully added to MESSAGE table !");
         } catch (SQLException e) {
             e.printStackTrace();

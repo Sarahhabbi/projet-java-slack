@@ -52,9 +52,9 @@ public class Client {
 
             @Override
             public void run() {
-                String messageFromChat=" ";
+                String messageFromChat;
 
-                while(messageFromChat != null){
+                while(socket.isConnected()){
                     try{
                         messageFromChat = bufferedReader.readLine(); // read message broadcasted by CientHandler
                         System.out.println(messageFromChat);
@@ -70,8 +70,7 @@ public class Client {
                         break;
                     }
                 }
-                System.out.println("Server is down");
-                closeEverything(socket, bufferedReader, writer);
+
             }
         }).start();
     }
@@ -117,7 +116,6 @@ public class Client {
             System.out.println("/ join #myNewChannel ");
             System.out.println("/ delete #myNewChannel");
             System.out.println("/ displayConnectedMembers #myNewChannel");
-            System.out.println("/ exit slack");
 
             client.listenForMessage();
             client.sendMessage();
